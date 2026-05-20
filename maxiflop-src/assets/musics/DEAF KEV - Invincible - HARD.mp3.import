@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://c4acibwi0doge"
+path="res://.godot/imported/DEAF KEV - Invincible - HARD.mp3-377da2f237c1d340ee175c7d8d47d8fb.mp3str"
+
+[deps]
+
+source_file="res://assets/musics/DEAF KEV - Invincible - HARD.mp3"
+dest_files=["res://.godot/imported/DEAF KEV - Invincible - HARD.mp3-377da2f237c1d340ee175c7d8d47d8fb.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

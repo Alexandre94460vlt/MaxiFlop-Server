@@ -1,0 +1,341 @@
+[gd_scene load_steps=30 format=3 uid="uid://ciwvrycfpep41"]
+
+[ext_resource type="Script" uid="uid://ba4j7lpidepbd" path="res://scripts/SettingsMenu.gd" id="1"]
+[ext_resource type="Script" uid="uid://ryas3c5opoo2" path="res://scenes/fond_setting.gd" id="2_6ujoi"]
+[ext_resource type="FontFile" uid="uid://b4ve68u3poffy" path="res://assets/Ecriture/PixelifySans-VariableFont_wght.ttf" id="2_bjevb"]
+[ext_resource type="Texture2D" uid="uid://dwpo1xlj7geh4" path="res://assets/mascotte/Max.png" id="2_farsn"]
+[ext_resource type="Texture2D" uid="uid://bjeiglbahfmqr" path="res://assets/Setting/demo01_PixelSky_layer01.png" id="2_lml7s"]
+[ext_resource type="Script" uid="uid://c28wkjh5mmcll" path="res://scenes/max.gd" id="3_1opq1"]
+[ext_resource type="Texture2D" uid="uid://bhlwt4nvgt4jl" path="res://assets/Setting/demo01_PixelSky_layer02.png" id="3_j0mc1"]
+[ext_resource type="Texture2D" uid="uid://h4vfgrnujdfs" path="res://assets/mascotte/Flo.png" id="4_1a4yy"]
+[ext_resource type="Texture2D" uid="uid://gpa2ai1su52l" path="res://assets/Setting/demo01_PixelSky_layer03.png" id="4_56p73"]
+[ext_resource type="Script" uid="uid://dxehsgy1s3vpp" path="res://scenes/flo.gd" id="5_n38y6"]
+[ext_resource type="Texture2D" uid="uid://coekop0j0i5du" path="res://assets/mascotte/Gwen.png" id="7_gxln4"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_rjsgb"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_hover"]
+bg_color = Color(0.2, 0.5, 0.8, 0.6)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+shadow_color = Color(0.2, 0.5, 0.8, 0.5)
+shadow_size = 15
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn"]
+bg_color = Color(0.12, 0.15, 0.25, 0.8)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+shadow_color = Color(0, 0, 0, 0.5)
+shadow_size = 8
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_6refh"]
+atlas = ExtResource("2_farsn")
+region = Rect2(0, 48, 32, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_q4aj8"]
+atlas = ExtResource("2_farsn")
+region = Rect2(32, 48, 32, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_bq77e"]
+atlas = ExtResource("2_farsn")
+region = Rect2(64, 48, 32, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_t3gsn"]
+atlas = ExtResource("2_farsn")
+region = Rect2(96, 48, 32, 16)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_uuosg"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6refh")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_q4aj8")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_bq77e")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_t3gsn")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_x6gw8"]
+atlas = ExtResource("4_1a4yy")
+region = Rect2(0, 48, 32, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_g4k6d"]
+atlas = ExtResource("4_1a4yy")
+region = Rect2(32, 48, 32, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8w52l"]
+atlas = ExtResource("4_1a4yy")
+region = Rect2(64, 48, 32, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_04e7m"]
+atlas = ExtResource("4_1a4yy")
+region = Rect2(96, 48, 32, 16)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_p175c"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_x6gw8")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_g4k6d")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_8w52l")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_04e7m")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_64joi"]
+atlas = ExtResource("7_gxln4")
+region = Rect2(0, 16, 32, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_u58vc"]
+atlas = ExtResource("7_gxln4")
+region = Rect2(32, 16, 32, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_c5by0"]
+atlas = ExtResource("7_gxln4")
+region = Rect2(64, 16, 32, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ftb3s"]
+atlas = ExtResource("7_gxln4")
+region = Rect2(96, 16, 32, 16)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_lvrc6"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_64joi")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_u58vc")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_c5by0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ftb3s")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[node name="SettingsMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="FondAnime" type="ParallaxBackground" parent="."]
+script = ExtResource("2_6ujoi")
+
+[node name="CoucheCiel" type="ParallaxLayer" parent="FondAnime"]
+motion_scale = Vector2(0.2, 0.2)
+motion_mirroring = Vector2(1280, 0)
+
+[node name="SpriteCiel" type="Sprite2D" parent="FondAnime/CoucheCiel"]
+texture_filter = 1
+position = Vector2(641, 358)
+scale = Vector2(5.34167, 5.31852)
+texture = ExtResource("2_lml7s")
+
+[node name="CoucheGNuage" type="ParallaxLayer" parent="FondAnime"]
+motion_scale = Vector2(0.6, 0.6)
+motion_mirroring = Vector2(1280, 0)
+
+[node name="SpriteGNuage" type="Sprite2D" parent="FondAnime/CoucheGNuage"]
+texture_filter = 1
+position = Vector2(642.5, 359.75)
+scale = Vector2(5.3375, 5.33704)
+texture = ExtResource("3_j0mc1")
+
+[node name="CoucheNuage" type="ParallaxLayer" parent="FondAnime"]
+motion_mirroring = Vector2(1280, 0)
+
+[node name="SpriteNuage" type="Sprite2D" parent="FondAnime/CoucheNuage"]
+texture_filter = 1
+position = Vector2(643.5, 359.25)
+scale = Vector2(5.34583, 5.31482)
+texture = ExtResource("4_56p73")
+
+[node name="StarParticles" type="CPUParticles2D" parent="."]
+z_index = 5
+position = Vector2(640, -50)
+amount = 100
+lifetime = 6.0
+preprocess = 5.0
+emission_shape = 3
+emission_rect_extents = Vector2(800, 1)
+direction = Vector2(0, 1)
+spread = 0.0
+gravity = Vector2(0, 0)
+initial_velocity_min = 100.0
+initial_velocity_max = 250.0
+scale_amount_min = 2.0
+scale_amount_max = 4.0
+color = Color(0.99, 0.6831, 0.892815, 1)
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 31.0
+offset_top = 4.0
+offset_right = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(1, 1, 1, 0)
+
+[node name="Content" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -250.0
+offset_top = -226.5
+offset_right = 250.0
+offset_bottom = 226.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 30
+
+[node name="Title" type="Label" parent="Content"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.856547, 0.844456, 0.469449, 1)
+theme_override_colors/font_shadow_color = Color(0.915563, 0.623778, 0.423803, 1)
+theme_override_fonts/font = ExtResource("2_bjevb")
+theme_override_font_sizes/font_size = 60
+text = "PARAMÈTRES"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="Content"]
+layout_mode = 2
+theme_override_constants/separation = 20
+theme_override_styles/separator = SubResource("StyleBoxEmpty_rjsgb")
+
+[node name="MasterSection" type="VBoxContainer" parent="Content"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Content/MasterSection"]
+layout_mode = 2
+theme_override_colors/font_color = Color(3.85046e-06, 0.792114, 0.883068, 1)
+theme_override_colors/font_shadow_color = Color(0.361278, 0.461669, 1, 1)
+theme_override_fonts/font = ExtResource("2_bjevb")
+theme_override_font_sizes/font_size = 24
+text = "Musique en jeu"
+
+[node name="MasterSlider" type="HSlider" parent="Content/MasterSection"]
+unique_name_in_owner = true
+layout_mode = 2
+value = 100.0
+
+[node name="MusicSection" type="VBoxContainer" parent="Content"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Content/MusicSection"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.314714, 0.521742, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.59923, 0.445212, 1, 1)
+theme_override_fonts/font = ExtResource("2_bjevb")
+theme_override_font_sizes/font_size = 24
+text = "Musique du menu"
+
+[node name="MusicSlider" type="HSlider" parent="Content/MusicSection"]
+unique_name_in_owner = true
+layout_mode = 2
+value = 70.0
+
+[node name="FullscreenSection" type="HBoxContainer" parent="Content"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Content/FullscreenSection"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.518, 1, 0.788, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.5)
+theme_override_fonts/font = ExtResource("2_bjevb")
+theme_override_font_sizes/font_size = 24
+text = "Plein écran"
+
+[node name="FullscreenCheckContainer" type="Control" parent="Content/FullscreenSection"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+
+[node name="FullscreenCheck" type="CheckBox" parent="Content/FullscreenSection/FullscreenCheckContainer"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_right = 24.0
+offset_bottom = 24.0
+scale = Vector2(1.4, 1.4)
+pivot_offset = Vector2(12, 12)
+
+[node name="Spacer" type="Control" parent="Content"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+
+[node name="BackButton" type="Button" parent="Content"]
+custom_minimum_size = Vector2(250, 70)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_fonts/font = ExtResource("2_bjevb")
+theme_override_font_sizes/font_size = 28
+theme_override_styles/hover = SubResource("StyleBoxFlat_btn_hover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn")
+text = "RETOUR"
+
+[node name="Max" type="AnimatedSprite2D" parent="."]
+texture_filter = 1
+position = Vector2(84, 209)
+scale = Vector2(4.75, 4.4375)
+sprite_frames = SubResource("SpriteFrames_uuosg")
+autoplay = "default"
+frame_progress = 0.0457667
+script = ExtResource("3_1opq1")
+
+[node name="Flo" type="AnimatedSprite2D" parent="."]
+texture_filter = 1
+position = Vector2(86, 481)
+scale = Vector2(4.90625, 4.6875)
+sprite_frames = SubResource("SpriteFrames_p175c")
+autoplay = "default"
+frame_progress = 0.134659
+flip_h = true
+script = ExtResource("5_n38y6")
+
+[node name="Gwen" type="AnimatedSprite2D" parent="."]
+texture_filter = 1
+position = Vector2(993, 43)
+scale = Vector2(5.75781, 5.39063)
+sprite_frames = SubResource("SpriteFrames_lvrc6")
+autoplay = "default"
+frame_progress = 0.249662
+flip_h = true
+flip_v = true
+
+[connection signal="pressed" from="Content/BackButton" to="." method="_on_back_pressed"]

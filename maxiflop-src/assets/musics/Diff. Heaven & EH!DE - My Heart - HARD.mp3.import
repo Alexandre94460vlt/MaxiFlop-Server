@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bcmpapmqthouc"
+path="res://.godot/imported/Diff. Heaven & EH!DE - My Heart - HARD.mp3-238faecef92c5bf3c77c6a36d88eed94.mp3str"
+
+[deps]
+
+source_file="res://assets/musics/Diff. Heaven & EH!DE - My Heart - HARD.mp3"
+dest_files=["res://.godot/imported/Diff. Heaven & EH!DE - My Heart - HARD.mp3-238faecef92c5bf3c77c6a36d88eed94.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

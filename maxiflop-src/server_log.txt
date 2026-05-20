@@ -1,0 +1,9 @@
+
+Local: http://localhost:3000
+Wifi:  http://25.30.32.56:3000
+Wifi:  http://192.168.56.1:3000
+Wifi:  http://10.193.76.128:3000
+Wifi:  http://172.23.208.1:3000
+
+Démarrage du tunnel Cloudflare (cloudflared)...
+Tunnel public Cloudflare: https://strap-parties-watershed-cleaning.trycloudflare.com

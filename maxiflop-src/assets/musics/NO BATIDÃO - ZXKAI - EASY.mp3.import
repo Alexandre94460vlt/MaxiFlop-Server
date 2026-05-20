@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://dfcqqdo6fuhjs"
+path="res://.godot/imported/NO BATIDÃO - ZXKAI - EASY.mp3-2aa430dabbcb3a6817473489729171d6.mp3str"
+
+[deps]
+
+source_file="res://assets/musics/NO BATIDÃO - ZXKAI - EASY.mp3"
+dest_files=["res://.godot/imported/NO BATIDÃO - ZXKAI - EASY.mp3-2aa430dabbcb3a6817473489729171d6.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://coqvxaahx4ile"
+path="res://.godot/imported/Electro-Light - Symbolism - EASY.mp3-984b8eb8805ea42f741997382c4ae53d.mp3str"
+
+[deps]
+
+source_file="res://assets/musics/Electro-Light - Symbolism - EASY.mp3"
+dest_files=["res://.godot/imported/Electro-Light - Symbolism - EASY.mp3-984b8eb8805ea42f741997382c4ae53d.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

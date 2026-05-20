@@ -1,0 +1,692 @@
+[gd_scene load_steps=42 format=3 uid="uid://cfyaf4ikyente"]
+
+[ext_resource type="Script" uid="uid://5rffvyxrumdk" path="res://scripts/GameScreen.gd" id="1"]
+[ext_resource type="Script" uid="uid://bosdajfqbseo2" path="res://scripts/NoteSpawner.gd" id="2"]
+[ext_resource type="Script" uid="uid://uv7li1wb5jc7" path="res://scripts/HitZone.gd" id="3"]
+[ext_resource type="PackedScene" uid="uid://dcwqtomkrgupn" path="res://scenes/Note.tscn" id="4"]
+[ext_resource type="AudioStream" uid="uid://dcf34i1jfenko" path="res://assets/test_kick_6s.wav" id="5_xpdqc"]
+[ext_resource type="FontFile" uid="uid://b4ve68u3poffy" path="res://assets/Ecriture/PixelifySans-VariableFont_wght.ttf" id="6_xvbay"]
+[ext_resource type="Texture2D" uid="uid://dyvouf8b51x5b" path="res://assets/GameScreenBack/Space Background.png" id="7_4j5qn"]
+[ext_resource type="Script" uid="uid://ch3kvol4lrfkh" path="res://scenes/fond.gd" id="7_wswou"]
+[ext_resource type="Texture2D" uid="uid://dpw1hqbxawj7n" path="res://assets/GameScreenBack/star2.png" id="8_sk67e"]
+[ext_resource type="Texture2D" uid="uid://gs7gtjt4kaqq" path="res://assets/mascotte/bobA.png" id="10_itox2"]
+[ext_resource type="Texture2D" uid="uid://dnunxmncnhyny" path="res://assets/mascotte/bobB.png" id="11_srnt6"]
+[ext_resource type="Texture2D" uid="uid://dagt6tpkqyk18" path="res://assets/mascotte/bobC.png" id="12_hv6d7"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ring_blue"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 6
+border_width_top = 6
+border_width_right = 6
+border_width_bottom = 6
+border_color = Color(0.373, 0.804, 0.894, 0.8)
+corner_radius_top_left = 999
+corner_radius_top_right = 999
+corner_radius_bottom_right = 999
+corner_radius_bottom_left = 999
+shadow_color = Color(0.373, 0.804, 0.894, 0.4)
+shadow_size = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ring_yellow"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 6
+border_width_top = 6
+border_width_right = 6
+border_width_bottom = 6
+border_color = Color(0.941, 0.878, 0.251, 0.8)
+corner_radius_top_left = 999
+corner_radius_top_right = 999
+corner_radius_bottom_right = 999
+corner_radius_bottom_left = 999
+shadow_color = Color(0.941, 0.878, 0.251, 0.4)
+shadow_size = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ring_red"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 6
+border_width_top = 6
+border_width_right = 6
+border_width_bottom = 6
+border_color = Color(1, 0.439, 0.506, 0.8)
+corner_radius_top_left = 999
+corner_radius_top_right = 999
+corner_radius_bottom_right = 999
+corner_radius_bottom_left = 999
+shadow_color = Color(1, 0.439, 0.506, 0.4)
+shadow_size = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_progress_song"]
+bg_color = Color(0.518, 1, 0.788, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rightpanel"]
+content_margin_left = 24.0
+content_margin_top = 24.0
+content_margin_right = 24.0
+content_margin_bottom = 24.0
+bg_color = Color(0.12, 0.12, 0.22, 0.9)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+shadow_color = Color(0, 0, 0, 0.3)
+shadow_size = 15
+shadow_offset = Vector2(0, 8)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_hover"]
+content_margin_left = 24.0
+content_margin_top = 12.0
+content_margin_right = 24.0
+content_margin_bottom = 12.0
+bg_color = Color(0.48, 0.92, 1, 0.9)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_color = Color(0, 0, 0, 0.4)
+shadow_size = 12
+shadow_offset = Vector2(0, 6)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_normal"]
+content_margin_left = 24.0
+content_margin_top = 12.0
+content_margin_right = 24.0
+content_margin_bottom = 12.0
+bg_color = Color(0.373, 0.804, 0.894, 0.8)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_color = Color(0, 0, 0, 0.3)
+shadow_size = 8
+shadow_offset = Vector2(0, 4)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_error_toast"]
+content_margin_left = 20.0
+content_margin_top = 10.0
+content_margin_right = 20.0
+content_margin_bottom = 10.0
+bg_color = Color(0.95, 0.2, 0.25, 0.9)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_color = Color(0, 0, 0, 0.3)
+shadow_size = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_arrivee"]
+content_margin_top = 8.0
+content_margin_bottom = 8.0
+bg_color = Color(0.15, 0.15, 0.3, 1)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+shadow_color = Color(0, 0, 0, 0.2)
+shadow_size = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_44tku"]
+bg_color = Color(0.372549, 0.803922, 0.894118, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cs1ym"]
+bg_color = Color(1, 0.439216, 0.505882, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_k8mal"]
+bg_color = Color(0.748873, 0.643717, 0.263296, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_leaderboard"]
+content_margin_left = 16.0
+content_margin_top = 16.0
+content_margin_right = 16.0
+content_margin_bottom = 16.0
+bg_color = Color(0.07, 0.06, 0.16, 0.95)
+corner_radius_top_left = 16
+corner_radius_top_right = 16
+corner_radius_bottom_right = 16
+corner_radius_bottom_left = 16
+shadow_color = Color(0, 0, 0, 0.3)
+shadow_size = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_result"]
+bg_color = Color(0.08, 0.06, 0.18, 0.97)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hshbf"]
+atlas = ExtResource("10_itox2")
+region = Rect2(0, 16, 32, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_cjvrw"]
+atlas = ExtResource("10_itox2")
+region = Rect2(32, 16, 32, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_jtgoe"]
+atlas = ExtResource("10_itox2")
+region = Rect2(64, 16, 32, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_lk6j4"]
+atlas = ExtResource("10_itox2")
+region = Rect2(96, 16, 32, 16)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_hla2o"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_hshbf")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_cjvrw")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_jtgoe")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_lk6j4")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_qv4wl"]
+atlas = ExtResource("11_srnt6")
+region = Rect2(0, 16, 32, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_fk3qu"]
+atlas = ExtResource("11_srnt6")
+region = Rect2(32, 16, 32, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_qgxpl"]
+atlas = ExtResource("11_srnt6")
+region = Rect2(64, 16, 32, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gl8f2"]
+atlas = ExtResource("11_srnt6")
+region = Rect2(96, 16, 32, 16)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_bpgbe"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_qv4wl")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_fk3qu")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_qgxpl")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_gl8f2")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_c6sp0"]
+atlas = ExtResource("12_hv6d7")
+region = Rect2(0, 16, 32, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5ro48"]
+atlas = ExtResource("12_hv6d7")
+region = Rect2(32, 16, 32, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_pmwhp"]
+atlas = ExtResource("12_hv6d7")
+region = Rect2(64, 16, 32, 16)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hb8ly"]
+atlas = ExtResource("12_hv6d7")
+region = Rect2(96, 16, 32, 16)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_etjhr"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_c6sp0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5ro48")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_pmwhp")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_hb8ly")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}]
+
+[node name="GameScreen" type="Node2D"]
+script = ExtResource("1")
+song_duration = 60.0
+
+[node name="Background" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.04, 0.05, 0.08, 1)
+
+[node name="Ground" type="ColorRect" parent="."]
+offset_top = 580.0
+offset_right = 852.0
+offset_bottom = 720.0
+color = Color(0.06, 0.07, 0.12, 1)
+
+[node name="PlayField" type="Node2D" parent="."]
+
+[node name="LineBlue" type="ColorRect" parent="PlayField"]
+offset_left = 142.0
+offset_right = 282.0
+offset_bottom = 720.0
+color = Color(0.2, 0.5, 0.6, 0.1)
+
+[node name="LineYellow" type="ColorRect" parent="PlayField"]
+offset_left = 355.0
+offset_right = 495.0
+offset_bottom = 720.0
+color = Color(0.6, 0.5, 0.15, 0.1)
+
+[node name="LineRed" type="ColorRect" parent="PlayField"]
+offset_left = 568.0
+offset_right = 708.0
+offset_bottom = 720.0
+color = Color(0.6, 0.25, 0.3, 0.1)
+
+[node name="NoteSpawner" type="Node2D" parent="PlayField"]
+script = ExtResource("2")
+note_scene = ExtResource("4")
+
+[node name="HitCircleBlue" type="PanelContainer" parent="PlayField"]
+offset_left = 162.0
+offset_top = 510.0
+offset_right = 262.0
+offset_bottom = 610.0
+pivot_offset = Vector2(50, 50)
+theme_override_styles/panel = SubResource("StyleBoxFlat_ring_blue")
+
+[node name="HitCircleYellow" type="PanelContainer" parent="PlayField"]
+offset_left = 375.0
+offset_top = 510.0
+offset_right = 475.0
+offset_bottom = 610.0
+pivot_offset = Vector2(50, 50)
+theme_override_styles/panel = SubResource("StyleBoxFlat_ring_yellow")
+
+[node name="HitCircleRed" type="PanelContainer" parent="PlayField"]
+offset_left = 588.0
+offset_top = 510.0
+offset_right = 688.0
+offset_bottom = 610.0
+pivot_offset = Vector2(50, 50)
+theme_override_styles/panel = SubResource("StyleBoxFlat_ring_red")
+
+[node name="HitZone" type="Node2D" parent="PlayField"]
+script = ExtResource("3")
+note_spawner = NodePath("../NoteSpawner")
+
+[node name="MusicPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("5_xpdqc")
+
+[node name="HUD" type="CanvasLayer" parent="."]
+
+[node name="ProgressBar" type="ProgressBar" parent="HUD"]
+offset_right = 1280.0
+offset_bottom = 10.0
+theme_override_styles/fill = SubResource("StyleBoxFlat_progress_song")
+show_percentage = false
+
+[node name="LobbyFrame" type="PanelContainer" parent="HUD"]
+visible = false
+offset_left = 140.0
+offset_top = 110.0
+offset_right = 700.0
+offset_bottom = 610.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_rightpanel")
+
+[node name="VBox" type="VBoxContainer" parent="HUD/LobbyFrame"]
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="LobbyQRTexture" type="TextureRect" parent="HUD/LobbyFrame/VBox"]
+custom_minimum_size = Vector2(300, 300)
+layout_mode = 2
+size_flags_horizontal = 4
+stretch_mode = 5
+
+[node name="StartMatchButton" type="Button" parent="HUD/LobbyFrame/VBox"]
+custom_minimum_size = Vector2(360, 70)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_fonts/font = ExtResource("6_xvbay")
+theme_override_font_sizes/font_size = 28
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_button_normal")
+text = "Lancer la partie"
+
+[node name="ComboLabel" type="Label" parent="HUD"]
+visible = false
+offset_left = 40.0
+offset_top = 395.0
+offset_right = 500.0
+offset_bottom = 445.0
+theme_override_colors/font_color = Color(0.667, 0.608, 1, 1)
+theme_override_fonts/font = ExtResource("6_xvbay")
+theme_override_font_sizes/font_size = 28
+text = "x0 COMBO"
+
+[node name="MultiplierLabel" type="Label" parent="HUD"]
+visible = false
+offset_left = 40.0
+offset_top = 352.0
+offset_right = 300.0
+offset_bottom = 394.0
+theme_override_colors/font_color = Color(0.518, 1, 0.788, 1)
+theme_override_fonts/font = ExtResource("6_xvbay")
+theme_override_font_sizes/font_size = 24
+text = "x1"
+
+[node name="CountdownLabel" type="Label" parent="HUD"]
+offset_top = 150.0
+offset_right = 840.0
+offset_bottom = 450.0
+theme_override_colors/font_color = Color(1, 1, 1, 0.9)
+theme_override_fonts/font = ExtResource("6_xvbay")
+theme_override_font_sizes/font_size = 200
+text = "5"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="WarmupLabel" type="Label" parent="HUD"]
+offset_top = 100.0
+offset_right = 840.0
+offset_bottom = 200.0
+theme_override_colors/font_color = Color(1, 1, 1, 0.9)
+theme_override_fonts/font = ExtResource("6_xvbay")
+theme_override_font_sizes/font_size = 56
+text = "Salle d'attente"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="LobbyBackButton" type="Button" parent="HUD"]
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 160.0
+offset_bottom = 70.0
+theme_override_fonts/font = ExtResource("6_xvbay")
+theme_override_font_sizes/font_size = 20
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_button_normal")
+text = "Retour"
+
+[node name="ErrorToast" type="PanelContainer" parent="HUD"]
+visible = false
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 300.0
+offset_bottom = 80.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_error_toast")
+
+[node name="Label" type="Label" parent="HUD/ErrorToast"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("6_xvbay")
+theme_override_font_sizes/font_size = 18
+text = "Pas assez de joueurs"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RightPanel" type="PanelContainer" parent="HUD"]
+offset_left = 852.0
+offset_top = 16.0
+offset_right = 1270.0
+offset_bottom = 704.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_rightpanel")
+
+[node name="VBox" type="VBoxContainer" parent="HUD/RightPanel"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="QRHTTPRequest" type="HTTPRequest" parent="HUD/RightPanel/VBox"]
+
+[node name="LobbyCount" type="Label" parent="HUD/RightPanel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.75, 0.88, 1)
+theme_override_font_sizes/font_size = 15
+text = "Joueurs connectes: 0"
+
+[node name="JoinLink" type="Label" parent="HUD/RightPanel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.65, 0.8, 1)
+theme_override_font_sizes/font_size = 18
+text = "Rejoindre: http://127.0.0.1:3000"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="ArriveeHeader" type="PanelContainer" parent="HUD/RightPanel/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_arrivee")
+
+[node name="ArriveeLabel" type="Label" parent="HUD/RightPanel/VBox/ArriveeHeader"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 15
+horizontal_alignment = 1
+
+[node name="TeamAScore" type="Label" parent="HUD/RightPanel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.373, 0.804, 0.894, 1)
+theme_override_font_sizes/font_size = 17
+text = "Equipe bleue: 0"
+
+[node name="TeamBScore" type="Label" parent="HUD/RightPanel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.439, 0.506, 1)
+theme_override_font_sizes/font_size = 17
+text = "Equipe rouge: 0"
+
+[node name="TeamCScore" type="Label" parent="HUD/RightPanel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.941, 0.878, 0.251, 1)
+theme_override_font_sizes/font_size = 17
+text = "Equipe jaune: 0"
+
+[node name="RacePanel" type="VBoxContainer" parent="HUD/RightPanel/VBox"]
+custom_minimum_size = Vector2(0, 170)
+layout_mode = 2
+theme_override_constants/separation = 28
+alignment = 1
+
+[node name="TeamATrack" type="HBoxContainer" parent="HUD/RightPanel/VBox/RacePanel"]
+layout_mode = 2
+theme_override_constants/separation = 4
+alignment = 2
+
+[node name="TeamALabel" type="Label" parent="HUD/RightPanel/VBox/RacePanel/TeamATrack"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.373, 0.804, 0.894, 1)
+theme_override_font_sizes/font_size = 13
+text = "E1"
+horizontal_alignment = 1
+
+[node name="TeamAProgress" type="ProgressBar" parent="HUD/RightPanel/VBox/RacePanel/TeamATrack"]
+custom_minimum_size = Vector2(350, 25)
+layout_mode = 2
+theme_override_styles/fill = SubResource("StyleBoxFlat_44tku")
+show_percentage = false
+
+[node name="TeamBTrack" type="HBoxContainer" parent="HUD/RightPanel/VBox/RacePanel"]
+layout_mode = 2
+theme_override_constants/separation = 4
+alignment = 2
+
+[node name="TeamBLabel" type="Label" parent="HUD/RightPanel/VBox/RacePanel/TeamBTrack"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.439, 0.506, 1)
+theme_override_font_sizes/font_size = 13
+text = "E2"
+horizontal_alignment = 1
+
+[node name="TeamBProgress" type="ProgressBar" parent="HUD/RightPanel/VBox/RacePanel/TeamBTrack"]
+custom_minimum_size = Vector2(350, 25)
+layout_mode = 2
+theme_override_styles/fill = SubResource("StyleBoxFlat_cs1ym")
+show_percentage = false
+
+[node name="TeamCTrack" type="HBoxContainer" parent="HUD/RightPanel/VBox/RacePanel"]
+layout_mode = 2
+theme_override_constants/separation = 4
+alignment = 2
+
+[node name="TeamCLabel" type="Label" parent="HUD/RightPanel/VBox/RacePanel/TeamCTrack"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.941, 0.878, 0.251, 1)
+theme_override_font_sizes/font_size = 13
+text = "E3"
+horizontal_alignment = 1
+
+[node name="TeamCProgress" type="ProgressBar" parent="HUD/RightPanel/VBox/RacePanel/TeamCTrack"]
+custom_minimum_size = Vector2(350, 25)
+layout_mode = 2
+theme_override_styles/fill = SubResource("StyleBoxFlat_k8mal")
+show_percentage = false
+
+[node name="LeaderboardPanel" type="PanelContainer" parent="HUD/RightPanel/VBox"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_leaderboard")
+
+[node name="LeaderboardVBox" type="VBoxContainer" parent="HUD/RightPanel/VBox/LeaderboardPanel"]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="Top5Label" type="RichTextLabel" parent="HUD/RightPanel/VBox/LeaderboardPanel/LeaderboardVBox"]
+layout_mode = 2
+theme_override_font_sizes/normal_font_size = 14
+bbcode_enabled = true
+text = "[b]LEADERBOARD GLOBAL TOP 5[/b]"
+fit_content = true
+autowrap_mode = 2
+
+[node name="ResultPanel" type="PanelContainer" parent="HUD"]
+visible = false
+offset_right = 852.0
+offset_bottom = 720.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_result")
+
+[node name="VBox" type="VBoxContainer" parent="HUD/ResultPanel"]
+layout_mode = 2
+theme_override_constants/separation = 26
+alignment = 1
+
+[node name="TitleLabel" type="Label" parent="HUD/ResultPanel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.518, 1, 0.788, 1)
+theme_override_fonts/font = ExtResource("6_xvbay")
+theme_override_font_sizes/font_size = 44
+text = "FIN DE PARTIE"
+horizontal_alignment = 1
+
+[node name="TeamScoresLabel" type="RichTextLabel" parent="HUD/ResultPanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/normal_font_size = 26
+bbcode_enabled = true
+text = "[center]Equipe bleue: 0  |  Equipe rouge: 0  |  Equipe jaune: 0[/center]"
+fit_content = true
+autowrap_mode = 2
+
+[node name="WinnerLabel" type="Label" parent="HUD/ResultPanel/VBox"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("6_xvbay")
+theme_override_font_sizes/font_size = 30
+text = "Equipe bleue remporte la partie !"
+horizontal_alignment = 1
+
+[node name="ResultTop5Label" type="RichTextLabel" parent="HUD/ResultPanel/VBox"]
+layout_mode = 2
+theme_override_font_sizes/normal_font_size = 18
+bbcode_enabled = true
+text = "[center][b]LEADERBOARD[/b][/center]"
+fit_content = true
+autowrap_mode = 2
+
+[node name="ButtonsHBox" type="HBoxContainer" parent="HUD/ResultPanel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 32
+alignment = 1
+
+[node name="RestartButton" type="Button" parent="HUD/ResultPanel/VBox/ButtonsHBox"]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("6_xvbay")
+theme_override_font_sizes/font_size = 24
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_button_normal")
+text = "↺  Rejouer"
+
+[node name="MenuButton" type="Button" parent="HUD/ResultPanel/VBox/ButtonsHBox"]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("6_xvbay")
+theme_override_font_sizes/font_size = 24
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_button_normal")
+text = "≡  Retour Menu"
+
+[node name="Game_screen" type="ParallaxBackground" parent="."]
+script = ExtResource("7_wswou")
+
+[node name="CoucheBack" type="ParallaxLayer" parent="Game_screen"]
+motion_mirroring = Vector2(0, 721)
+
+[node name="SpriteBack" type="Sprite2D" parent="Game_screen/CoucheBack"]
+texture_filter = 1
+position = Vector2(754, 361)
+scale = Vector2(7.53, 3.605)
+texture = ExtResource("7_4j5qn")
+
+[node name="CoucheStars" type="ParallaxLayer" parent="Game_screen"]
+motion_mirroring = Vector2(0, 721)
+
+[node name="SpriteStars" type="Sprite2D" parent="Game_screen/CoucheStars"]
+texture_filter = 1
+position = Vector2(754, 363)
+scale = Vector2(7.52, 3.63)
+texture = ExtResource("8_sk67e")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+texture_filter = 1
+position = Vector2(38, 189)
+rotation = 1.5708
+scale = Vector2(3.9375, 4.5)
+sprite_frames = SubResource("SpriteFrames_hla2o")
+autoplay = "default"
+frame_progress = 0.176512
+
+[node name="AnimatedSprite2D2" type="AnimatedSprite2D" parent="."]
+texture_filter = 1
+position = Vector2(814, 396)
+rotation = -1.5708
+scale = Vector2(3.48437, 4.5)
+sprite_frames = SubResource("SpriteFrames_bpgbe")
+autoplay = "default"
+frame_progress = 0.570794
+
+[node name="AnimatedSprite2D3" type="AnimatedSprite2D" parent="."]
+texture_filter = 1
+position = Vector2(421.406, 685.438)
+scale = Vector2(3.66211, 4.42969)
+sprite_frames = SubResource("SpriteFrames_etjhr")
+autoplay = "default"
+frame_progress = 0.675946
+
+[connection signal="pressed" from="HUD/ResultPanel/VBox/ButtonsHBox/RestartButton" to="." method="_on_restart_pressed"]
+[connection signal="pressed" from="HUD/ResultPanel/VBox/ButtonsHBox/MenuButton" to="." method="_on_menu_pressed"]

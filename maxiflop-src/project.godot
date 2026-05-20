@@ -1,0 +1,45 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[animation]
+
+compatibility/default_parent_skeleton_in_mesh_instance_3d=true
+
+[application]
+
+config/name="Maxiflop"
+config/description="Jeu de rythme inspiré de Osu! Taiko"
+run/main_scene="res://scenes/MainMenu.tscn"
+config/features=PackedStringArray("4.6", "GL Compatibility")
+config/icon="res://icon.svg"
+
+[audio]
+
+main/bus_layout="res://default_bus_layout.tres"
+
+[autoload]
+
+SettingsManager="*res://scripts/SettingsManager.gd"
+GameManager="*res://scripts/GameManager.gd"
+MultiplayerBridge="*res://scripts/MultiplayerBridge.gd"
+ServerManager="*res://scripts/ServerManager.gd"
+MusicManager="*res://scripts/MusicManager.gd"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/size/mode=2
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
+[dotnet]
+
+project/assembly_name="Maxiflop"

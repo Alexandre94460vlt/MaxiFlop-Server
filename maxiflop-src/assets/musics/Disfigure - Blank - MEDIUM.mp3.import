@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://b8uicvh4482vm"
+path="res://.godot/imported/Disfigure - Blank - MEDIUM.mp3-c33ea499cb76da4800ed8a7d7d845266.mp3str"
+
+[deps]
+
+source_file="res://assets/musics/Disfigure - Blank - MEDIUM.mp3"
+dest_files=["res://.godot/imported/Disfigure - Blank - MEDIUM.mp3-c33ea499cb76da4800ed8a7d7d845266.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

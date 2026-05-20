@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://4x7ugt1ra43n"
+path="res://.godot/imported/Jo C. & Sex Whales - We Are - HARD.mp3-be1275eb0c7aa65c4979059b9bbfcb2a.mp3str"
+
+[deps]
+
+source_file="res://assets/musics/Jo C. & Sex Whales - We Are - HARD.mp3"
+dest_files=["res://.godot/imported/Jo C. & Sex Whales - We Are - HARD.mp3-be1275eb0c7aa65c4979059b9bbfcb2a.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

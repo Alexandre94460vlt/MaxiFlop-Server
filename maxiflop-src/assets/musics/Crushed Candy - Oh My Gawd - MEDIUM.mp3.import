@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://b8fifvnjkepd"
+path="res://.godot/imported/Crushed Candy - Oh My Gawd - MEDIUM.mp3-2d58e6cdac4c90aec228d7a9477f12cf.mp3str"
+
+[deps]
+
+source_file="res://assets/musics/Crushed Candy - Oh My Gawd - MEDIUM.mp3"
+dest_files=["res://.godot/imported/Crushed Candy - Oh My Gawd - MEDIUM.mp3-2d58e6cdac4c90aec228d7a9477f12cf.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

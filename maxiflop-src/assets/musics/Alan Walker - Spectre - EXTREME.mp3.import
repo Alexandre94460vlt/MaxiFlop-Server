@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://bqm7f3n3do5xv"
+path="res://.godot/imported/Alan Walker - Spectre - EXTREME.mp3-c2428e33f1680c2f27990e8e7448499b.mp3str"
+
+[deps]
+
+source_file="res://assets/musics/Alan Walker - Spectre - EXTREME.mp3"
+dest_files=["res://.godot/imported/Alan Walker - Spectre - EXTREME.mp3-c2428e33f1680c2f27990e8e7448499b.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4
