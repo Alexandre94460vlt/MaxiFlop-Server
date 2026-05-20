@@ -1,0 +1,438 @@
+/* ============== IMPORT DE LA POLICE ============== */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+/* ============== VARIABLES DE COULEURS ============== */
+:root {
+    --color-purple: #C89BFF;
+    --color-cyan: #5fcde4;
+    --color-pink: #ff7081;
+    --color-mint: #f5ff6a;
+    --color-blue: #aab2ff;
+    --color-mauve: #eca0ff;
+    --color-dark: #1a1a2e;
+    --color-darker: #0f0f1e;
+    --color-light: #f0f0f0;
+}
+
+/* ============== RESET & BODY ============== */
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Press Start 2P', cursive;
+    color: var(--color-light);
+    background: linear-gradient(135deg, var(--color-dark) 0%, #2a2a4e 100%);
+    position: relative;
+    image-rendering: pixelated;
+    user-select: none;
+    touch-action: manipulation;
+}
+
+/* ============== RESET ============== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    width: 100vw;
+    height: 100dvh;
+    overflow: hidden;
+    font-family: 'Press Start 2P', cursive;
+    color: var(--color-light);
+    background: linear-gradient(135deg, var(--color-dark) 0%, #2a2a4e 100%);
+    position: relative;
+    image-rendering: pixelated;
+	display: flex;
+    justify-content: center; 
+    align-items: center;
+}
+
+/* ============== PARALLAX BACKGROUND ============== */
+.parallax-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        url('./images/front.png'), 
+        url('./images/buildings.png'), 
+        url('./images/back.png');
+    background-repeat: repeat-x;
+    background-position: bottom center;
+    background-size: auto 100%;
+    animation: parallax-scroll 60s linear infinite;
+    pointer-events: none;
+    opacity: 0.6;
+    filter: brightness(1.1);
+}
+
+@keyframes parallax-scroll {
+    from {
+        background-position: 
+            0px bottom, 
+            0px bottom, 
+            0px bottom;
+    }
+    to {
+        background-position: 
+            -2500px bottom, 
+            -1200px bottom, 
+            -600px bottom;
+    }
+}
+
+/* ============== ROTATION DU JEU ============== */
+@media (orientation: portrait) {
+    body.playing {
+        transform: rotate(90deg);
+        transform-origin: center center;
+        width: 100dvh;
+        height: 100dvw;
+        position: fixed;
+        top: calc((100dvh - 100dvw) / 2);
+        left: calc((100dvw - 100dvh) / 2);
+    }
+}
+/* ============== SECTIONS (SCREENS) ============== */
+.screen {
+    background: rgba(15, 15, 30, 0.8);
+    backdrop-filter: blur(10px);
+    border: 3px solid var(--color-purple);
+    border-radius: 12px;
+    padding: 2.5rem 1.5rem;
+    width: min(90%, 500px);
+    box-shadow: 0 0 20px rgba(200, 155, 255, 0.2), inset 0 0 20px rgba(200, 155, 255, 0.05);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    opacity: 1;
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    animation: slide-up 0.6s ease-out;
+    position: relative; /* Ajout */
+    z-index: 10;
+}
+
+.screen.hidden {
+    display: none !important;
+    opacity: 0;
+}
+
+/* ============== TYPOGRAPHIE ============== */
+h1 {
+    font-size: 2.2rem;
+    font-weight: 900;
+    background: linear-gradient(90deg, var(--color-cyan), var(--color-purple), var(--color-mauve));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 20px rgba(200, 155, 255, 0.3);
+    letter-spacing: 2px;
+    margin-bottom: 1rem;
+    animation: dance 1.2s ease-in-out infinite;
+    line-height: 1.3;
+}
+
+h2 {
+    font-size: 1.3rem;
+    color: var(--color-cyan);
+    margin-bottom: 1.5rem;
+    line-height: 1.4;
+}
+
+h3 {
+    font-size: 0.8rem;
+    color: var(--color-mint);
+    margin-top: 20px;
+}
+
+.subtitle, #teamInfo, #teamSelection p {
+    font-size: 0.65rem;
+    color: var(--color-cyan);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+}
+
+/* ============== INPUTS ============== */
+input {
+    background: rgba(95, 205, 228, 0.1);
+    border: 2px solid var(--color-cyan);
+    border-radius: 6px;
+    padding: 1rem;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.7rem;
+    color: var(--color-light);
+    transition: all 0.3s ease;
+    outline: none;
+    text-align: center;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+input::placeholder { color: rgba(95, 205, 228, 0.4); }
+input:focus {
+    background: rgba(95, 205, 228, 0.2);
+    border-color: var(--color-mauve);
+    box-shadow: 0 0 15px rgba(95, 205, 228, 0.3);
+}
+
+.status {
+    font-size: 0.6rem;
+    color: var(--color-pink);
+    min-height: 1rem;
+    margin-top: 10px;
+}
+
+/* ============== BOUTONS (EQUIPES & JEU) ============== */
+.team-btns {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.join-team-btn, .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid;
+    border-radius: 8px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.65rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.08s ease;
+    box-shadow: 0 4px 0 0, 0 6px 10px rgba(0, 0, 0, 0.4);
+    min-height: 80px;
+    width: 100%;
+    aspect-ratio: 1;
+    color: white;
+}
+
+.join-team-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 0, 0 8px 14px rgba(0, 0, 0, 0.5);
+}
+
+.join-team-btn:active, .btn:active, .active-hit {
+    transform: translateY(2px) !important;
+    box-shadow: 0 1px 0 0, 0 2px 4px rgba(0, 0, 0, 0.3) !important;
+    filter: brightness(1.2);
+}
+
+.join-team-btn.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    filter: grayscale(80%);
+}
+
+/* Couleurs des équipes (S'applique à l'accueil ET à la manette) */
+.blue {
+    background: linear-gradient(135deg, #5fcde1, #5ad7ed);
+    border-color: #5d95c9;
+	color: #0f0f1e;
+    box-shadow: 0 4px 0 #5d95c9, 0 6px 10px rgba(170, 178, 255, 0.4);
+}
+.yellow {
+    background: linear-gradient(135deg, #f5ff84, #f8ffa8);
+    border-color: #f4ea62;
+    color: #0f0f1e;
+    box-shadow: 0 4px 0 #f4ea62, 0 6px 10px rgba(245, 255, 132, 0.4);
+}
+.red {
+    background: linear-gradient(135deg, #ff7081, #ff9aab);
+    border-color: #e85464;
+	color: #0f0f1e;
+    box-shadow: 0 4px 0 #e85464, 0 6px 10px rgba(255, 112, 129, 0.4);
+}
+
+
+/* ============== PAGE MANETTE (CONTROLLER) ============== */
+#controller {
+    max-width: 900px;
+    width: 96%;
+    height: 95%; 
+    padding: 15px;
+    justify-content: space-between;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    backdrop-filter: none;
+}
+
+.scoreWrap {
+    background: rgba(15, 15, 30, 0.8);
+    backdrop-filter: blur(5px);
+    border: 2px solid var(--color-purple);
+    border-radius: 8px;
+    padding: 15px 20px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-shrink: 0;
+}
+
+#scoreText {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--color-mint);
+}
+
+#rankText {
+    font-size: 0.6rem;
+    color: var(--color-muted);
+}
+
+.buttons {
+    display: flex;
+    gap: 15px;
+    width: 100%;
+    flex: 1;
+    margin-bottom: 20px;
+}
+
+.buttons .btn {
+    flex: 1; /* Chaque bouton prendra 1/3 de la largeur disponible */
+    width: auto; /* Annule le width: 100% hérité */
+    height: 100%;
+    aspect-ratio: auto; /* Désactive l'obligation d'être un carré parfait */
+    border-radius: 12px;
+}
+
+#feedback {
+    font-size: 1rem;
+    color: var(--color-cyan);
+    text-transform: uppercase;
+    flex-shrink: 0; /* Empêche le texte "PRET ?" d'être écrasé */
+    padding-bottom: 5px; /* Ajoute un petit coussin de sécurité en bas */
+}
+
+/* ============== PAGE VOTE MUSIQUE ============== */
+#vote { max-width: 600px; }
+
+.music-list {
+    width: 100%;
+    max-height: 350px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-right: 5px;
+    margin-top: 15px;
+}
+
+.music-list::-webkit-scrollbar { width: 6px; }
+.music-list::-webkit-scrollbar-track { background: transparent; }
+.music-list::-webkit-scrollbar-thumb { background: var(--color-purple); border-radius: 10px; }
+
+.music-item {
+    background: rgba(26, 26, 46, 0.9);
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 0.7rem;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+    line-height: 1.5;
+}
+
+.music-item:hover { border-color: var(--color-cyan); }
+.music-item.selected {
+    background: rgba(95, 205, 228, 0.2);
+    border-color: var(--color-cyan);
+    box-shadow: 0 0 15px rgba(95, 205, 228, 0.3);
+}
+
+.diff-legend {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 0.5rem;
+    width: 100%;
+}
+
+.legend-item {
+    padding: 6px 8px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.legend-item.easy { color: #4ade80; border-bottom: 2px solid #4ade80; }
+.legend-item.medium { color: #fb923c; border-bottom: 2px solid #fb923c; }
+.legend-item.hard { color: var(--color-pink); border-bottom: 2px solid var(--color-pink); }
+.legend-item.extreme { color: var(--color-purple); border-bottom: 2px solid var(--color-purple); }
+
+.music-item.diff-easy { border-left: 6px solid #4ade80; }
+.music-item.diff-medium { border-left: 6px solid #fb923c; }
+.music-item.diff-hard { border-left: 6px solid var(--color-pink); }
+.music-item.diff-extreme { border-left: 6px solid var(--color-purple); }
+
+/* ============== RESPONSIVE POUR LES BOUTONS D'EQUIPE ============== */
+@media (max-width: 600px) {
+    .join-team-btn {
+        min-height: 70px;
+        font-size: 0.6rem;
+    }
+}
+
+@media (max-width: 400px) {
+    .join-team-btn {
+        min-height: 60px;
+        font-size: 0.55rem;
+    }
+}
+.rotate-icon {
+    font-size: 4rem;
+    animation: rotate-hint 2s infinite ease-in-out;
+    margin-bottom: 20px;
+}
+
+#eliminated-screen {
+    border-color: var(--color-pink);
+    box-shadow: 0 0 20px rgba(255, 112, 129, 0.2);
+}
+
+.glitch-text {
+    font-size: 2.5rem;
+    color: var(--color-pink);
+    text-shadow: 0 0 20px rgba(255, 112, 129, 0.8);
+    animation: pulse 2s infinite;
+    margin: 0;
+}
+
+@keyframes dance {
+    0%, 100% { transform: translateY(0) rotate(0deg) scaleY(1); }
+    25% { transform: translateY(-5px) rotate(-2deg) scaleY(1.05); }
+    50% { transform: translateY(0) rotate(0deg) scaleY(1); }
+    75% { transform: translateY(-5px) rotate(2deg) scaleY(1.05); }
+}
+
+@keyframes slide-up {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+    0%, 100% { text-shadow: 0 0 15px rgba(255, 112, 129, 0.4); }
+    50% { text-shadow: 0 0 30px rgba(255, 112, 129, 0.8); }
+}
+
+@keyframes rotate-hint {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(90deg); }
+}
+
+.key-hint { display: none; }
+body.is-pc .key-hint { display: block; }

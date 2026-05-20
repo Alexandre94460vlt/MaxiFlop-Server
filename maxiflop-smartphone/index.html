@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="screen-orientation" content="landscape">
+    <title>Maxiflop Manette</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <div class="parallax-bg"></div>
+    <section id="login" class="screen">
+        <h1>MAXIFLOP</h1>
+        <p class="subtitle">Entrez votre pseudo pour rejoindre la partie</p>
+        <input type="text" id="nameInput" placeholder="Pseudo" maxlength="15" />
+        
+        <div id="teamSelection">
+            <p>Choisis ton equipe :</p>
+            <div class="team-btns">
+                <button class="join-team-btn blue" data-team="Equipe1">Bleue</button>
+                <button class="join-team-btn red" data-team="Equipe2">Rouge</button>
+                <button class="join-team-btn yellow" data-team="Equipe3">Jaune</button>
+            </div>
+        </div>
+        <p id="status" class="status"></p>
+    </section>
+
+    <section id="waiting" class="screen hidden">
+        <h2>En attente...</h2>
+        <p id="teamInfo">Affectation d'equipe en cours</p>
+        <br>
+        <h3 id="timerDisplay">En attente de joueurs...</h3>
+    </section>
+
+    <section id="vote" class="screen hidden">
+        <h2>Votez pour la musique !</h2>
+        <div class="diff-legend">
+            <span class="legend-item easy">Vert : Facile</span>
+            <span class="legend-item medium">Orange : Moyen</span>
+            <span class="legend-item hard">Rouge : Difficile</span>
+            <span class="legend-item extreme">Violet : Extreme</span>
+        </div>
+        <div id="musicList" class="music-list">
+            <!-- Dynamically populated -->
+        </div>
+    </section>
+
+    <section id="rotate" class="screen hidden">
+        <div class="rotate-icon">🔄</div>
+        <h2>C'est parti !</h2>
+        <p>Tournez votre telephone à l'horizontal pour jouer</p>
+    </section>
+
+    <section id="controller" class="screen hidden">
+        <div class="scoreWrap">
+            <div id="scoreText">0</div>
+            <div id="rankText">Rang #1 - Équipe bleue</div>
+        </div>
+        <div class="buttons">
+            <button data-color="0" class="btn blue" aria-label="Bleu"></button>
+            <button data-color="1" class="btn yellow" aria-label="Jaune"></button>
+            <button data-color="2" class="btn red" aria-label="Rouge"></button>
+        </div>
+        <div id="feedback">Pret ?</div>
+    </section>
+
+    <section id="eliminated-screen" class="screen hidden">
+        <div class="eliminated-content">
+            <h1 class="glitch-text">ÉLIMINÉ</h1>
+            <p>Un faux pas fatal...</p>
+            <p class="sub-text">Attendez la fin du round.</p>
+        </div>
+    </section>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="./script.js"></script>
+</body>
+</html>
