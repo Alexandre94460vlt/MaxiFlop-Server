@@ -8,7 +8,7 @@
     "start": "npm install && node server.js"
   },
   "dependencies": {
-    "cloudflared": "^0.7.1",
+   
     "express": "^4.21.2",
     "socket.io": "^4.8.3"
   }
