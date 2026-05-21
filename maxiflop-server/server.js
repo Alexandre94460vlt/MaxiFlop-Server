@@ -276,13 +276,20 @@ io.on('connection', (socket) => {
 	});
 
 	//deconnexion
+	// À insérer à la place de la fin du script (gestion du disconnect et listen)
+	
+	// deconnexion
 	socket.on('disconnect', () => {
 		console.log('user disconnected :', socket.id);
 
 		if (godotHost === socket) {
-			console.log('Godot Host déconnecté.');
+			console.log('Godot Host déconnecté. Réinitialisation de la session (attente reconnexion).');
 			godotHost = null;
-			cleanupAndExit();
+			
+			// Sécurité Render : Au lieu de tuer le processus complet, on réinitialise l'état du jeu
+			gameState.status = "lobby";
+			gameState.playerVotes = {};
+			io.emit('update-lobby', gameState);
 			return;
 		}
 
@@ -301,66 +308,12 @@ io.on('connection', (socket) => {
 	});
 });
 
-const cloudflared = require('cloudflared');
+// Port dynamique pour Render (Render utilise la variable d'environnement PORT)
+const finalPort = process.env.PORT || port;
 
-server.listen(port, "0.0.0.0", async () => {
-	console.log(`\nLocal: http://localhost:${port}`);
-	console.log("Système :", os.platform(), os.arch());
-	console.log("Node Executable :", process.execPath);
-
-	const ifaces = os.networkInterfaces();
-	for (let dev in ifaces) {
-		ifaces[dev].forEach((d) => {
-			if (d.family === 'IPv4' && !d.internal) console.log(`Wifi:  http://${d.address}:${port}`);
-		});
-	}
-	console.log();
-
-	try {
-		console.log("Démarrage du tunnel Cloudflare...");
-
-		const bin = cloudflared.bin;
-		const tunnelArgs = ['tunnel', '--url', `http://127.0.0.1:${port}`];
-
-		console.log(`[Cloudflare] Commande : ${bin} ${tunnelArgs.join(' ')}`);
-
-		cloudflaredProcess = spawn(bin, tunnelArgs);
-
-		let outputBuffer = '';
-		const handleTunnelOutput = (data) => {
-			const str = data.toString();
-			outputBuffer += str;
-
-			// Filtrage des logs pour la console
-			if (str.includes("INF") || str.includes("ERR") || str.includes("https://")) {
-				process.stdout.write("[Cloudflare] " + str);
-			}
-
-			const match = outputBuffer.match(/https:\/\/[a-zA-Z0-9-]+\.trycloudflare\.com/);
-			if (match && !publicUrl) {
-				publicUrl = match[0];
-				console.log(`\n=== TUNNEL PRÊT ===\nURL publique: ${publicUrl}\n===================\n`);
-
-				if (godotHost) {
-					console.log("[Cloudflare] Envoi de l'URL à l'Hôte Godot.");
-					godotHost.emit('public_url', { url: publicUrl });
-				}
-			}
-		};
-
-		cloudflaredProcess.stdout.on('data', handleTunnelOutput);
-		cloudflaredProcess.stderr.on('data', handleTunnelOutput);
-
-		cloudflaredProcess.on('close', (code) => {
-			console.log(`Le tunnel Cloudflare s'est fermé avec le code ${code}`);
-			cloudflaredProcess = null;
-		});
-
-		cloudflaredProcess.on('error', (err) => {
-			console.log("Erreur critique Cloudflare :", err.message);
-		});
-
-	} catch (e) {
-		console.log("Erreur de lancement Cloudflare :", e.message);
-	}
+server.listen(finalPort, "0.0.0.0", () => {
+	console.log(`\n=== Serveur Maxiflop Actif ===`);
+	console.log(`Écoute sur le port : ${finalPort}`);
+	console.log(`Statut : Prêt pour Render (Lien public direct, Cloudflare désactivé)`);
+	console.log(`==============================\n`);
 });
