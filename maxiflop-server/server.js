@@ -6,8 +6,7 @@ const os = require('os');
 const app = express();
 const server = createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
-const port = 3000;
-const { spawn } = require('child_process');
+const port = process.env.PORT || 3000;
 
 app.use(express.static(join(__dirname, '../maxiflop-smartphone')));
 app.get('/', (req, res) => res.sendFile(join(__dirname, '../maxiflop-smartphone/index.html')));
@@ -27,17 +26,17 @@ const gameState = {
 };
 
 let godotHost = null;
-let publicUrl = null;
-let cloudflaredProcess = null;
 
-function cleanupAndExit() {
-	console.log("\nArrêt du serveur et nettoyage...");
-	if (cloudflaredProcess) {
-		console.log("Fermeture du tunnel Cloudflare...");
-		cloudflaredProcess.kill();
-	}
-	process.exit(0);
-}
+// ─── URL PUBLIQUE ────────────────────────────────────────────────────────────
+// Sur Render, RENDER_EXTERNAL_URL est injectée automatiquement.
+// En local, tu peux définir PUBLIC_URL dans un .env, sinon on utilise localhost.
+const publicUrl =
+	process.env.RENDER_EXTERNAL_URL ||
+	process.env.PUBLIC_URL ||
+	`http://localhost:${port}`;
+
+console.log(`\n=== URL PUBLIQUE ===\n${publicUrl}\n===================\n`);
+// ─────────────────────────────────────────────────────────────────────────────
 
 // Envoyer le lobby (infos joueurs) à godot
 function sendLobbyToGodot() {
@@ -54,7 +53,6 @@ function sendLobbyToGodot() {
 
 	const teamScores = { ...gameState.teamScores };
 
-	//on envoie - ici
 	godotHost.emit("lobby_update", {
 		players: playersArr,
 		teamScores: teamScores,
@@ -63,7 +61,6 @@ function sendLobbyToGodot() {
 }
 
 function envoyerVotesAGodot() {
-	//Il faut voter
 	if (gameState.status !== "voting") return;
 
 	const choix = {};
@@ -85,7 +82,7 @@ function envoyerVotesAGodot() {
 			percentage: Math.round((choix[songName] / totalVotes) * 100)
 		}))
 		.sort((a, b) => b.votes - a.votes)
-		.slice(0, 3); // Top 3
+		.slice(0, 3);
 
 	io.emit("vote_update", statsTrie);
 }
@@ -110,7 +107,6 @@ function verifierEquilibrage() {
 	const max = Math.max(...size);
 	const min = Math.min(...size);
 
-	//si la différence entre le nombre de joueur de l'équipe la plus nombreuse et l'équipe la moins nombreuse est sup à 2, on lance une erreur
 	if (max - min > 2) {
 		io.emit('desequilibre', gameState.teams);
 		return false;
@@ -127,24 +123,17 @@ io.on('connection', (socket) => {
 		console.log('Godot Host connecté via Socket.IO.');
 		godotHost = socket;
 
-		// si l'URL publique est déjà prête, on l'envoie tout de suite
-		if (publicUrl) {
-			console.log("[Cloudflare] Envoi de l'URL publique existante à l'hôte Godot...");
-			godotHost.emit('public_url', { url: publicUrl });
-		}
+		// L'URL est connue dès le démarrage, on l'envoie immédiatement
+		console.log("[Server] Envoi de l'URL publique à l'hôte Godot :", publicUrl);
+		godotHost.emit('public_url', { url: publicUrl });
 
 		sendLobbyToGodot();
 	});
 
-	// Écoute de Godot
 	socket.on('host_phase', (data) => {
-		// data: { phase: "lobby", "countdown", "playing", "ended", gameMode: "NORMAL" }
-
-		// maj de l'état interne -> mettre en gamemode normal avant de broadcast
 		gameState.gameMode = data.gameMode || "NORMAL";
 
 		if (gameState.status === "voting" && data.phase !== "voting") {
-			// calculer le gagnant
 			const choix = {};
 			Object.values(gameState.playerVotes).forEach(song => {
 				choix[song] = (choix[song] || 0) + 1;
@@ -158,12 +147,10 @@ io.on('connection', (socket) => {
 					winner = song;
 				}
 			});
-			// si pas de vote, prendre une musique au hasard
 			if (!winner && gameState.availableMusics.length > 0) {
 				winner = gameState.availableMusics[Math.floor(Math.random() * gameState.availableMusics.length)];
 			}
 
-			//on envoie a godot
 			io.emit('vote_result', { winner });
 
 		} else if (data.phase === "voting") {
@@ -175,17 +162,14 @@ io.on('connection', (socket) => {
 		} else if (data.phase === "reveal" || data.phase === "countdown") {
 			gameState.status = data.phase;
 		} else if (data.phase === "lobby" || data.phase === "ended") {
-			//on réinitialise
 			gameState.status = "lobby";
 			gameState.playerVotes = {};
 		}
 
-		// on prévient les clients
 		io.emit('host_phase', data);
 	});
 
 	socket.on('player_eliminated', (data) => {
-		// data: { playerId: "socketId" }
 		if (data.playerId) {
 			console.log(`Joueur éliminé : ${data.playerId}`);
 			io.to(data.playerId).emit('eliminated', { status: true });
@@ -198,7 +182,6 @@ io.on('connection', (socket) => {
 		sendLobbyToGodot();
 	});
 
-	// envoyer l'état actuel immédiatement à la connexion
 	envoyerLobbyAClients();
 
 	socket.on('get_lobby', () => {
@@ -219,9 +202,7 @@ io.on('connection', (socket) => {
 
 		player.team = teamName;
 		team.players.push(socket.id);
-		//au client
 		io.emit('update-lobby', gameState);
-		//godot
 		sendLobbyToGodot();
 	});
 
@@ -262,7 +243,6 @@ io.on('connection', (socket) => {
 
 	socket.on('vote', (data) => {
 		const songName = data.songName;
-
 		const cleanVote = songName.trim();
 		const match = gameState.availableMusics.find(m => m.trim().toLowerCase() === cleanVote.toLowerCase());
 
@@ -275,21 +255,12 @@ io.on('connection', (socket) => {
 		}
 	});
 
-	//deconnexion
-	// À insérer à la place de la fin du script (gestion du disconnect et listen)
-	
-	// deconnexion
 	socket.on('disconnect', () => {
 		console.log('user disconnected :', socket.id);
 
 		if (godotHost === socket) {
-			console.log('Godot Host déconnecté. Réinitialisation de la session (attente reconnexion).');
+			console.log('Godot Host déconnecté.');
 			godotHost = null;
-			
-			// Sécurité Render : Au lieu de tuer le processus complet, on réinitialise l'état du jeu
-			gameState.status = "lobby";
-			gameState.playerVotes = {};
-			io.emit('update-lobby', gameState);
 			return;
 		}
 
@@ -308,12 +279,14 @@ io.on('connection', (socket) => {
 	});
 });
 
-// Port dynamique pour Render (Render utilise la variable d'environnement PORT)
-const finalPort = process.env.PORT || port;
+server.listen(port, "0.0.0.0", () => {
+	console.log(`\nLocal: http://localhost:${port}`);
+	console.log("Système :", os.platform(), os.arch());
 
-server.listen(finalPort, "0.0.0.0", () => {
-	console.log(`\n=== Serveur Maxiflop Actif ===`);
-	console.log(`Écoute sur le port : ${finalPort}`);
-	console.log(`Statut : Prêt pour Render (Lien public direct, Cloudflare désactivé)`);
-	console.log(`==============================\n`);
+	const ifaces = os.networkInterfaces();
+	for (let dev in ifaces) {
+		ifaces[dev].forEach((d) => {
+			if (d.family === 'IPv4' && !d.internal) console.log(`Wifi:  http://${d.address}:${port}`);
+		});
+	}
 });
