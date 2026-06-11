@@ -120,15 +120,30 @@ io.on('connection', (socket) => {
 	socket.emit('update-lobby', gameState);
 
 	socket.on('host_join', () => {
-		console.log('Godot Host connecté via Socket.IO.');
-		godotHost = socket;
+        console.log('Godot Host connecté via Socket.IO.');
+        godotHost = socket;
 
-		// L'URL est connue dès le démarrage, on l'envoie immédiatement
-		console.log("[Server] Envoi de l'URL publique à l'hôte Godot :", publicUrl);
-		godotHost.emit('public_url', { url: publicUrl });
+        // === AJOUT : On vide le lobby pour démarrer une partie propre ===
+        console.log("Nouvelle session de jeu : Réinitialisation des joueurs...");
+        gameState.players = {};
+        gameState.playerVotes = {};
+        gameState.status = "lobby";
+        gameState.teamScores = { "Equipe1": 0, "Equipe2": 0, "Equipe3": 0 };
+        gameState.teams.forEach(team => {
+            team.players = [];
+        });
+        // ===============================================================
 
-		sendLobbyToGodot();
-	});
+        // si l'URL publique est déjà prête, on l'envoie tout de suite
+        if (publicUrl) {
+            console.log("[Cloudflare] Envoi de l'URL publique existante à l'hôte Godot...");
+            godotHost.emit('public_url', { url: publicUrl });
+        }
+
+        // On informe tout le monde (Godot + Téléphones connectés) que le lobby est vide
+        sendLobbyToGodot();
+        envoyerLobbyAClients(); 
+    });
 
 	socket.on('host_phase', (data) => {
 		gameState.gameMode = data.gameMode || "NORMAL";
