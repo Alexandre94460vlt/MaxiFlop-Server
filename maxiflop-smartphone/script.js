@@ -20,7 +20,7 @@ const showScreen = (key) => {
 	screens[key].classList.remove("hidden");
 };
 
-const socket = io("https://maxiflop-server-aggk.onrender.com");
+const socket = io();
 
 document.querySelectorAll(".join-team-btn").forEach((btn) => {
 	btn.addEventListener("click", () => {
