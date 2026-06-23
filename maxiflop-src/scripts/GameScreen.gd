@@ -4,7 +4,6 @@ extends Node2D
 @onready var hit_zone: Node2D = $PlayField/HitZone
 @onready var music_player: AudioStreamPlayer = $MusicPlayer
 
-
 @onready var combo_label: Label = $HUD/ComboLabel
 @onready var multiplier_label: Label = $HUD/MultiplierLabel
 @onready var progress_bar: ProgressBar = $HUD/ProgressBar
@@ -13,6 +12,11 @@ extends Node2D
 @onready var warmup_label: Label = $HUD/WarmupLabel
 @onready var lobby_frame: PanelContainer = $HUD/LobbyFrame
 @onready var lobby_qr_texture: TextureRect = $HUD/LobbyFrame/VBox/LobbyQRTexture
+
+# === MISE À JOUR : Déclaration de la variable pour le Code Salon ===
+@onready var room_code_label: Label = $HUD/LobbyFrame/VBox/RoomCodeLabel
+# ==================================================================
+
 @onready var start_match_button: Button = $HUD/LobbyFrame/VBox/StartMatchButton
 @onready var lobby_back_button: Button = $HUD/LobbyBackButton
 @onready var qr_http: HTTPRequest = $HUD/RightPanel/VBox/QRHTTPRequest
@@ -35,7 +39,7 @@ extends Node2D
 @onready var result_top5_label: RichTextLabel = $HUD/ResultPanel/VBox/ResultTop5Label
 
 @export var song_duration: float = 30.0
-@export var join_url_override: String = ""
+var join_url_override: String = "https://maxiflop-server-9vop.onrender.com"
 
 var countdown_time: float = 5.0
 var is_counting_down: bool = false
@@ -67,21 +71,32 @@ var vote_stats_label: RichTextLabel
 var kill_feed_label: RichTextLabel
 var br_kill_feed: Array = []
 
+# --- Variables pour le Fallback Web (Génération Procédurale) ---
+var is_web_fallback: bool = false
+var fallback_spawn_cooldown: float = 0.5
+var fallback_timer: float = 0.0
+var current_difficulty_level: String = "MEDIUM"
+
 func _ready() -> void:
+	if OS.has_feature("web"):
+		is_web_fallback = true
+		print("[Web Mode] Audio Spectrum désactivé. Activation du générateur temporel.")
+
 	# --- PhantomBus Setup ---
-	phantom_bus_idx = AudioServer.get_bus_index("PhantomBus")
-	if phantom_bus_idx == -1:
-		AudioServer.add_bus()
-		phantom_bus_idx = AudioServer.bus_count - 1
-		AudioServer.set_bus_name(phantom_bus_idx, "PhantomBus")
-		AudioServer.set_bus_mute(phantom_bus_idx, true)
-		var analyzer := AudioEffectSpectrumAnalyzer.new()
-		analyzer.buffer_length = 0.1
-		AudioServer.add_bus_effect(phantom_bus_idx, analyzer)
-	
-	ghost_player = AudioStreamPlayer.new()
-	ghost_player.bus = "PhantomBus"
-	add_child(ghost_player)
+	if not is_web_fallback:
+		phantom_bus_idx = AudioServer.get_bus_index("PhantomBus")
+		if phantom_bus_idx == -1:
+			AudioServer.add_bus()
+			phantom_bus_idx = AudioServer.bus_count - 1
+			AudioServer.set_bus_name(phantom_bus_idx, "PhantomBus")
+			AudioServer.set_bus_mute(phantom_bus_idx, true)
+			var analyzer := AudioEffectSpectrumAnalyzer.new()
+			analyzer.buffer_length = 0.1
+			AudioServer.add_bus_effect(phantom_bus_idx, analyzer)
+		
+		ghost_player = AudioStreamPlayer.new()
+		ghost_player.bus = "PhantomBus"
+		add_child(ghost_player)
 	
 	music_player.bus = "InGameMusic"
 	# ------------------------
@@ -99,7 +114,7 @@ func _ready() -> void:
 	start_match_button.pressed.connect(_on_start_match_pressed)
 	lobby_back_button.pressed.connect(_on_lobby_back_button_pressed)
 	qr_http.request_completed.connect(_on_qr_downloaded)
-	# qr_texture removed as requested
+	
 	lobby_frame.visible = false
 	_refresh_right_panel()
 	MultiplayerBridge.connect_as_host()
@@ -130,7 +145,6 @@ func _setup_voting_ui() -> void:
 	vbox.add_theme_constant_override("separation", 20)
 	voting_panel.add_child(vbox)
 	
-	# Reparent labels existants
 	warmup_label.reparent(vbox)
 	count_down.reparent(vbox)
 	
@@ -153,14 +167,11 @@ func _setup_voting_ui() -> void:
 	vote_stats_label.add_theme_font_size_override("normal_font_size", 28)
 	vbox.add_child(vote_stats_label)
 	
-	# Largeur fixe pour forcer le retour à la ligne automatique (autowrap)
-	voting_panel.custom_minimum_size = Vector2(600, 350) # Plus grand pour le top 3
+	voting_panel.custom_minimum_size = Vector2(600, 350)
 	voting_panel.clip_contents = true
-	
 	voting_panel.visible = false
 
 func _setup_kill_feed() -> void:
-	# Créer le label du kill feed dans le même parent que top5_label
 	var leaderboard_vbox = top5_label.get_parent()
 	kill_feed_label = RichTextLabel.new()
 	kill_feed_label.bbcode_enabled = true
@@ -197,8 +208,12 @@ func _enter_waiting_state() -> void:
 	start_match_button.disabled = false
 	lobby_back_button.visible = true
 	count_down.visible = false
+
+	# === MISE A JOUR DU CODE SALON MULTISESSION ===
+	if room_code_label != null:
+		room_code_label.text = "CODE SALON : " + MultiplayerBridge.current_room_code
+	# ==============================================
 	
-	# Masquer le race panel SEULEMENT en BR
 	if GameManager.current_mode == GameManager.GameMode.BATTLE_ROYALE:
 		race_panel.visible = false
 	else:
@@ -212,7 +227,6 @@ func _start_voting() -> void:
 	is_waiting_start = false
 	is_counting_down = false
 	is_voting = true
-	# Reset local timer and UI state immediately
 	voting_time = 15.0
 	voting_panel.visible = true
 	lobby_frame.visible = false
@@ -227,7 +241,6 @@ func _start_voting() -> void:
 	count_down.add_theme_font_size_override("font_size", 120)
 	start_match_button.visible = false
 	
-	# Lister les musiques (DirAccess fonctionne en éditeur, pas toujours en export PCK)
 	var musics := []
 	var dir = DirAccess.open("res://assets/musics")
 	if dir:
@@ -245,9 +258,7 @@ func _start_voting() -> void:
 						musics.append(name)
 			file_name = dir.get_next()
 	
-	# Fallback : lire la liste pré-générée (fiable en export)
 	if musics.is_empty():
-		print("[GameScreen] DirAccess vide, lecture de music_list.txt...")
 		var f = FileAccess.open("res://assets/musics/music_list.txt", FileAccess.READ)
 		if f:
 			while not f.eof_reached():
@@ -255,12 +266,7 @@ func _start_voting() -> void:
 				if line != "" and not musics.has(line):
 					musics.append(line)
 			f.close()
-			print("[GameScreen] %d musiques chargées depuis music_list.txt" % musics.size())
-		else:
-			push_error("[GameScreen] ERREUR : Aucune musique trouvée ! Ni DirAccess ni music_list.txt.")
 	
-	
-	# Trier les musiques par difficulté
 	var diff_priority := {"EASY": 0, "MEDIUM": 1, "HARD": 2, "EXTREME": 3}
 	musics.sort_custom(func(a: String, b: String):
 		var p_a = 99
@@ -273,11 +279,10 @@ func _start_voting() -> void:
 		
 		if p_a != p_b:
 			return p_a < p_b
-		return a < b # tri alphabétique si même difficulté
+		return a < b
 	)
 	
 	MultiplayerBridge.send_music_list(musics)
-	# Petit délai pour laisser le serveur traiter la liste avant le changement de phase
 	await get_tree().create_timer(0.1).timeout
 	MultiplayerBridge.send_game_phase("voting")
 	_refresh_right_panel()
@@ -305,7 +310,6 @@ func _start_countdown() -> void:
 	if GameManager.current_mode != GameManager.GameMode.BATTLE_ROYALE:
 		race_panel.visible = true
 	
-	# Fondus sonore : la musique du menu disparaît pour laisser place au jeu
 	MusicManager.fade_out(1.5)
 	
 	if GameManager.current_mode == GameManager.GameMode.BATTLE_ROYALE:
@@ -338,22 +342,16 @@ func _process(delta: float) -> void:
 		if display > 0:
 			count_down.text = str(display)
 		else:
-			# Temps écoulé, mais on reste en is_voting=true jusqu'au vote_result_received
-			# On n'envoie "reveal" qu'une seule fois via l'idantifiant du timer
-			if voting_time > -1.0: # Petit buffer pour ne pas spammer
+			if voting_time > -1.0:
 				count_down.text = "!"
-				if voting_time + delta > 0: # C'est la première fois qu'on passe en dessous de 0
+				if voting_time + delta > 0:
 					MultiplayerBridge.send_game_phase("reveal")
 		return
 
 	if reveal_timer > 0:
 		reveal_timer -= delta
 		if reveal_timer <= 0:
-			if GameManager.current_mode == GameManager.GameMode.BATTLE_ROYALE:
-				# En BR, on relaxe la vérification d'équilibrage
-				_start_countdown()
-			else:
-				_start_countdown()
+			_start_countdown()
 		return
 
 	if is_counting_down:
@@ -367,7 +365,30 @@ func _process(delta: float) -> void:
 				_begin_game()
 		return
 
+	# ─── LOGIQUE PENDANT LA PARTIE ───────────────────────────────────────────
 	elapsed += delta
+
+	# FORCE FALLBACK : Si on est sur le Web OU si le GameManager dit qu'on joue
+	if (is_web_fallback or GameManager.is_playing) and not is_game_over:
+		fallback_timer += delta
+		if fallback_timer >= fallback_spawn_cooldown:
+			fallback_timer = 0.0
+			var random_color = randi() % 3
+			
+			# On calcule le moment précis où la note doit atteindre la ligne de hit
+			var calculated_arrival = elapsed + note_spawner.approach_time
+			
+			if note_spawner.has_method("spawn_note"):
+				note_spawner.spawn_note(random_color)
+			elif note_spawner.has_method("_spawn_note"):
+				# On envoie la couleur et le bon temps d'arrivée calculé !
+				note_spawner._spawn_note(random_color, calculated_arrival)
+			elif note_spawner.has_method("generate_note"):
+				note_spawner.generate_note(random_color)
+			else:
+				if "current_amplitude" in note_spawner:
+					note_spawner.current_amplitude = 1.0
+
 	if GameManager.current_mode == GameManager.GameMode.BATTLE_ROYALE:
 		progress_bar.visible = false
 	else:
@@ -375,18 +396,16 @@ func _process(delta: float) -> void:
 		progress_bar.value = clamp((elapsed / song_duration) * 100.0, 0, 100)
 
 	if GameManager.current_mode == GameManager.GameMode.BATTLE_ROYALE and GameManager.is_playing:
-		# Accélération exponentielle : courbe pow(1.3) pour une montée progressive puis explosive
 		var difficulty_factor = 1.0 + pow(elapsed / 60.0, 1.3)
-		note_spawner.set_difficulty_scaling(difficulty_factor)
 		
-		# Timer affiché sur le panel de droite
+		# On ajuste la vitesse de la boucle temporelle
+		fallback_spawn_cooldown = max(0.12, _get_base_cooldown(current_difficulty_level) / difficulty_factor)
+		
+		if not is_web_fallback:
+			note_spawner.set_difficulty_scaling(difficulty_factor)
+		
 		team_c_score_label.text = "Temps : %d s" % int(elapsed)
-		
-		# Feedback optionnel dans la console (toutes les quelques secondes)
-		if int(elapsed) % 15 == 0 and elapsed > 0 and int(elapsed * 10) % 10 == 0:
-			print("[BR Mode] Difficulté crescendo: %.2f (cooldown: %.3f, threshold: %.5f)" % [difficulty_factor, note_spawner._actual_cooldown_calculated, note_spawner._actual_threshold_calculated])
 	else:
-		# Fade out progressif sur les 3 dernieres secondes si le track est cut
 		var fade_start := song_duration - 3.0
 		if elapsed >= fade_start:
 			var fade_factor = clamp((elapsed - fade_start) / 3.0, 0.0, 1.0)
@@ -394,6 +413,14 @@ func _process(delta: float) -> void:
 
 		if elapsed >= song_duration:
 			GameManager.end_game()
+
+func _get_base_cooldown(diff: String) -> float:
+	match diff:
+		"EASY": return 0.7
+		"MEDIUM": return 0.45
+		"HARD": return 0.3
+		"EXTREME": return 0.18
+		_: return 0.45
 
 func _begin_game() -> void:
 	is_counting_down = false
@@ -403,7 +430,6 @@ func _begin_game() -> void:
 	var extra = {"gameMode": "NORMAL"}
 	if GameManager.current_mode == GameManager.GameMode.BATTLE_ROYALE:
 		extra = {"gameMode": "BATTLE_ROYALE"}
-		# Initialiser les survivants à partir des joueurs réels présents
 		alive_players = players.keys().duplicate()
 		initial_br_players = alive_players.size()
 		eliminated_count = 0
@@ -412,36 +438,41 @@ func _begin_game() -> void:
 		br_miss_streak.clear()
 		br_kill_feed.clear()
 		_refresh_kill_feed()
-		print("[BR] Match lance avec ", initial_br_players, " survivants.")
 		_refresh_right_panel()
 		
 	MultiplayerBridge.send_game_phase("playing", 0, extra)
 	player_judged_notes.clear()
 	elapsed = 0.0
+	fallback_timer = 0.0
 	progress_bar.value = 0.0
-	music_player.volume_db = 0.0 # reset volume in case of quick restart
+	music_player.volume_db = 0.0 
+	
 	if music_player.stream != null:
 		var stream_len = float(music_player.stream.get_length())
 		if GameManager.current_mode == GameManager.GameMode.BATTLE_ROYALE:
-			song_duration = stream_len # Pas de limite en BR
+			song_duration = stream_len
 			note_spawner.is_looping = true
 		else:
 			song_duration = min(120.0, stream_len)
 			note_spawner.is_looping = false
 			
-		ghost_player.stop() # Securite
-		ghost_player.stream = music_player.stream
+		if not is_web_fallback and ghost_player:
+			ghost_player.stop()
+			ghost_player.stream = music_player.stream
 		
 	note_spawner.song_duration = song_duration
-	note_spawner.start_spectrum(phantom_bus_idx)
+	
+	if not is_web_fallback:
+		note_spawner.start_spectrum(phantom_bus_idx)
+		
 	GameManager.start_game()
 	
 	if music_player.stream != null:
 		music_player.play(0.0)
-		ghost_player.play(note_spawner.approach_time)
+		if not is_web_fallback and ghost_player:
+			ghost_player.play(note_spawner.approach_time)
 
 func _on_vote_result(song_name: String) -> void:
-	# On accepte le résultat même si le timer local est à 0 (is_voting est toujours true)
 	if not is_voting: return
 	is_voting = false
 	
@@ -449,27 +480,33 @@ func _on_vote_result(song_name: String) -> void:
 	vote_stats_label.visible = false
 	warmup_label.text = "MUSIQUE SÉLECTIONNÉE :"
 	
-	# Extraire la difficulté du nom du fichier (ex: "- EASY")
 	var display_name = song_name
 	var diff_text = ""
 	var diff_color = Color.WHITE
+	current_difficulty_level = "MEDIUM"
 	
 	if song_name.to_upper().ends_with("EASY"):
 		diff_text = "DIFFICULTÉ : FACILE"
 		diff_color = Color.GREEN
+		current_difficulty_level = "EASY"
 		display_name = song_name.left(song_name.length() - 7).strip_edges()
 	elif song_name.to_upper().ends_with("MEDIUM"):
 		diff_text = "DIFFICULTÉ : MOYEN"
 		diff_color = Color.ORANGE
+		current_difficulty_level = "MEDIUM"
 		display_name = song_name.left(song_name.length() - 9).strip_edges()
 	elif song_name.to_upper().ends_with("HARD"):
 		diff_text = "DIFFICULTÉ : DIFFICILE"
 		diff_color = Color.RED
+		current_difficulty_level = "HARD"
 		display_name = song_name.left(song_name.length() - 7).strip_edges()
 	elif song_name.to_upper().ends_with("EXTREME"):
 		diff_text = "DIFFICULTÉ : EXTRÊME"
 		diff_color = Color.BLACK
+		current_difficulty_level = "EXTREME"
 		display_name = song_name.left(song_name.length() - 10).strip_edges()
+	
+	fallback_spawn_cooldown = _get_base_cooldown(current_difficulty_level)
 	
 	count_down.text = display_name
 	count_down.add_theme_font_size_override("font_size", 48)
@@ -478,10 +515,8 @@ func _on_vote_result(song_name: String) -> void:
 	difficulty_label.add_theme_color_override("font_color", diff_color)
 	difficulty_label.visible = !diff_text.is_empty()
 	
-	# Appliquer la difficulté au spawner de notes
 	note_spawner.set_difficulty(song_name)
 	
-	# Charger la musique
 	var path = "res://assets/musics/" + song_name + ".mp3"
 	var stream = load(path)
 	if stream:
@@ -490,22 +525,16 @@ func _on_vote_result(song_name: String) -> void:
 	
 	reveal_timer = 4.0
 	
-	# Animation visuelle
-	# On centre le pivot pour que le scale se fasse depuis le milieu du texte
 	count_down.pivot_offset = count_down.size / 2
 	var tween = create_tween()
 	tween.tween_property(count_down, "scale", Vector2(1.2, 1.2), 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tween.tween_interval(3.5) # On attend un peu plus pour couvrir le reveal_timer
+	tween.tween_interval(3.5)
 	tween.tween_callback(func(): count_down.scale = Vector2.ONE)
-
-#Signaux
-
 
 func _on_combo_changed(new_combo: int) -> void:
 	if new_combo > 1:
 		combo_label.visible = true
 		combo_label.text = "x%d COMBO" % new_combo
-
 		var tween := create_tween()
 		tween.tween_property(combo_label, "scale", Vector2(1.2, 1.2), 0.05)
 		tween.tween_property(combo_label, "scale", Vector2(1.0, 1.0), 0.1)
@@ -521,7 +550,7 @@ func _on_combo_changed(new_combo: int) -> void:
 func _on_game_over() -> void:
 	note_spawner.stop()
 	music_player.stop()
-	if ghost_player:
+	if not is_web_fallback and ghost_player:
 		ghost_player.stop()
 	lobby_frame.visible = false
 	MultiplayerBridge.send_game_phase("ended")
@@ -539,13 +568,10 @@ func _on_game_over() -> void:
 	warmup_label.text = "Partie terminee"
 	result_panel.visible = true
 	
-	# Relancer la musique de menu avec un fondu à la fin de la partie
 	MusicManager.play_menu_music()
 	
 	_refresh_result_panel()
 	_refresh_right_panel()
-
-#btn hitzone
 
 func _unhandled_key_input(event: InputEvent) -> void:
 	if not event.pressed:
@@ -556,6 +582,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 func _on_btn_blue_pressed() -> void: hit_zone.press_button(0)
 func _on_btn_yellow_pressed() -> void: hit_zone.press_button(1)
 func _on_btn_red_pressed() -> void: hit_zone.press_button(2)
+
 func _refresh_result_panel() -> void:
 	var score_a := int(team_scores.get("Equipe1", 0))
 	var score_b := int(team_scores.get("Equipe2", 0))
@@ -579,7 +606,6 @@ func _refresh_result_panel() -> void:
 	
 	result_team_scores_label.text = label_text
 
-	# Couleur équipe bleue = cyan, rouge = rose, jaune = jaune
 	var color_a := Color("#5fcde4")
 	var color_b := Color("#ff7081")
 	var color_c := Color("#f0e040")
@@ -599,7 +625,6 @@ func _refresh_result_panel() -> void:
 				result_winner_label.text = "Tout le monde est mort..."
 				result_winner_label.add_theme_color_override("font_color", Color.GRAY)
 		
-		# Masquer le détail des équipes en BR
 		result_team_scores_label.text = "[center][b]MODE BATTLE ROYALE[/b]\nMusique : %s[/center]" % selected_song
 	else:
 		if score_a == max_score and score_b < max_score and score_c < max_score:
@@ -682,14 +707,13 @@ func _on_player_input_received(payload: Dictionary) -> void:
 	_apply_remote_result(player_id, result)
 
 func _evaluate_remote_hit(player_id: String, color: int) -> Dictionary:
-	# Fenêtre étendue à 0.8s pour le réseau
 	var best: Dictionary = note_spawner.get_best_note_for_timing(color, elapsed, 0.8)
 	if best.is_empty():
 		return {"result": "MISS", "points": 0, "empty": true}
 
 	var note = best.get("note", null)
 	var timing_error := float(best.get("timing_error", 999.0))
-	var result := "BAD" # Par défaut si hors des fenêtres classiques mais trouvé par le 0.8s
+	var result := "BAD"
 	var base_points := 0
 
 	if timing_error <= GameManager.WINDOW_PERFECT:
@@ -702,7 +726,6 @@ func _evaluate_remote_hit(player_id: String, color: int) -> Dictionary:
 		result = "BAD"
 		base_points = GameManager.SCORE_BAD
 	else:
-		# Note trouvée dans la fenêtre de lag (0.25 - 0.8s) : Coup BAD mais valide
 		result = "BAD"
 		base_points = GameManager.SCORE_BAD
 
@@ -731,7 +754,6 @@ func _on_global_note_missed(color: int, spawn_time: float) -> void:
 		return
 	var note_key := "%d:%d" % [color, int(round(spawn_time * 1000.0))]
 	for p_id in players.keys():
-		# Ignorer les joueurs déjà éliminés
 		if GameManager.current_mode == GameManager.GameMode.BATTLE_ROYALE and not alive_players.has(p_id):
 			continue
 		var judged: Dictionary = player_judged_notes.get(p_id, {})
@@ -753,10 +775,8 @@ func _apply_remote_result(player_id: String, result_payload: Dictionary) -> void
 		perfect_streak = 0
 		points = - GameManager.PENALTY_EMPTY
 		
-		# Logique Battle Royale : Élimination
 		if GameManager.current_mode == GameManager.GameMode.BATTLE_ROYALE:
 			if result_payload.get("timeout", false):
-				# Note ratée (timeout) — reset du compteur de spam vide
 				br_empty_hits[player_id] = 0
 				var note_key = result_payload.get("note_key", "")
 				get_tree().create_timer(0.6).timeout.connect(func():
@@ -765,26 +785,19 @@ func _apply_remote_result(player_id: String, result_payload: Dictionary) -> void
 					var judged = player_judged_notes.get(player_id, {})
 					if not judged.has(note_key):
 						if alive_players.has(player_id):
-							print("[BR] Elimination par note ratée: ", player_id, " note_key=", note_key)
 							_finalize_elimination(player_id)
 				)
 			elif result_payload.get("empty", false):
-				# Clic dans le vide : on incrémente le compteur de spam
 				var count = br_empty_hits.get(player_id, 0) + 1
 				br_empty_hits[player_id] = count
 				if count >= 2:
-					# 2 clics consécutifs dans le vide = élimination
 					if alive_players.has(player_id):
-						print("[BR] Elimination par spam dans le vide : ", player_id, " (count=", count, ")")
 						_finalize_elimination(player_id)
-			# else: cas impossible, on ignore
 	else:
-		# Succes ! On marque la note comme jugee
 		var note_key = result_payload.get("note_key", "")
 		if not note_key.is_empty():
 			_mark_judged_note(player_id, note_key)
 		
-		# Reset du compteur de spam dans le vide (le joueur a touché une note)
 		if GameManager.current_mode == GameManager.GameMode.BATTLE_ROYALE:
 			br_empty_hits[player_id] = 0
 			br_miss_streak[player_id] = 0
@@ -818,9 +831,7 @@ func _finalize_elimination(player_id: String) -> void:
 	alive_players.erase(player_id)
 	eliminated_count += 1
 	MultiplayerBridge.send_elimination(player_id)
-	print("[BR] Elimination confirmee : ", player_id)
 	
-	# Kill feed : ajouter le joueur éliminé
 	var player_name = "Inconnu"
 	if players.has(player_id):
 		player_name = str(players[player_id].get("name", "Inconnu"))
@@ -898,8 +909,6 @@ func _refresh_right_panel() -> void:
 		team_b_progress.value = (float(int(team_scores.get("Equipe2", 0))) / total) * 100.0
 		team_c_progress.value = (float(int(team_scores.get("Equipe3", 0))) / total) * 100.0
 
-	# En lobby : afficher QR code + lien, masquer classement
-	# En jeu ou Resultat : afficher classement
 	lobby_qr_texture.visible = (is_waiting_start or is_game_over) and join_url_ready
 	join_link_label.visible = is_waiting_start or is_game_over
 	
@@ -925,17 +934,11 @@ func _load_qr_code() -> void:
 	var local_ip := _get_preferred_lan_ip()
 	if url.is_empty():
 		url = "http://%s:3000" % local_ip
-	print("=== Génération du QR Code ===")
-	print("Adresse IP locale détectée : ", local_ip)
-	print("URL intégrée dans le QR Code : ", url)
-	print("===============================")
 	
 	var encoded := url.uri_encode()
 	qr_http.request("https://quickchart.io/qr?size=180&format=png&text=" + encoded)
 
 func _on_public_url_received(url: String) -> void:
-	print("Tunnel public recu depuis Node.js : ", url)
-	print("URL intégrée dans le QR Code : ", url)
 	join_url_ready = true
 	join_url_override = url
 	join_link_label.text = "Adresse: %s" % url
@@ -955,8 +958,6 @@ func _set_join_url() -> void:
 	var local_ip := _get_preferred_lan_ip()
 	if join_url.is_empty():
 		join_url = "http://%s:3000" % local_ip
-	print("Set Join URL - IP Locale : ", local_ip)
-	print("Set Join URL - URL finale : ", join_url)
 	join_link_label.text = "Adresse: %s" % join_url
 
 func _already_judged_note(player_id: String, note_key: String) -> bool:
@@ -974,13 +975,11 @@ func _mark_judged_note(player_id: String, note_key: String) -> void:
 
 func _get_preferred_lan_ip() -> String:
 	var fallback := "127.0.0.1"
-	# Passe 1 : chercher uniquement 192.168.x ou 10.x (Wi-Fi / LAN physique)
 	for addr in IP.get_local_addresses():
-		if addr.contains(":"): # Exclure IPv6
+		if addr.contains(":"):
 			continue
 		if addr.begins_with("192.168.") or addr.begins_with("10."):
 			return addr
-	# Passe 2 : fallback sur toute IPv4 non-loopback non-link-local non-172
 	for addr in IP.get_local_addresses():
 		if addr.contains(":"):
 			continue
@@ -994,13 +993,11 @@ func _on_start_match_pressed() -> void:
 	if GameManager.is_playing:
 		return
 		
-	# Vérification spécifique au mode Battle Royale
 	if GameManager.current_mode == GameManager.GameMode.BATTLE_ROYALE:
 		if players.size() < 1:
 			_show_error("Il faut au moins 1 joueur !")
 			return
 	else:
-		# Mode Normal : Vérification de l'équilibre des équipes
 		if not _verifier_equilibrage():
 			if players.size() == 0:
 				_show_error("Pas assez de joueurs !")
@@ -1009,9 +1006,8 @@ func _on_start_match_pressed() -> void:
 			return
 		
 	warmup_label.remove_theme_color_override("font_color")
-	
 	result_panel.visible = false
-	# Réinitialiser les scores
+	
 	team_scores["Equipe1"] = 0
 	team_scores["Equipe2"] = 0
 	team_scores["Equipe3"] = 0
@@ -1030,11 +1026,6 @@ func _on_lobby_back_button_pressed() -> void:
 
 func _on_vote_update(stats: Array) -> void:
 	if not is_voting: return
-	
-	# DEBUG : Compte les votes totaux
-	var total_debug := 0
-	for s in stats: total_debug += int(s.get("votes", 0))
-	print("[DEBUG] GameScreen received ", stats.size(), " items. Total votes: ", total_debug)
 
 	if stats.is_empty():
 		vote_stats_label.text = "[center][color=gray]Aucun vote pour le moment[/color][/center]"
@@ -1079,16 +1070,11 @@ func _verifier_equilibrage() -> bool:
 func _check_br_victory() -> void:
 	if GameManager.current_mode == GameManager.GameMode.BATTLE_ROYALE and GameManager.is_playing:
 		var current_alive = alive_players.size()
-		
-		# Cas Entraînement (Solo) : on s'arrête quand on meurt
 		if initial_br_players <= 1:
 			if current_alive == 0:
-				print("[BR] Entrainement solo termine (Erreur).")
 				GameManager.end_game()
 		else:
-			# Cas Compétition : le dernier gagne
 			if current_alive <= 1:
-				print("[BR] Victoire ! Un seul survivant.")
 				GameManager.end_game()
 
 func _show_error(message: String) -> void:
@@ -1105,4 +1091,7 @@ func _show_error(message: String) -> void:
 	var seq_tween = create_tween()
 	seq_tween.tween_interval(3.0)
 	seq_tween.tween_property(error_toast, "modulate:a", 0.0, 0.3)
-	seq_tween.chain().tween_callback(func(): error_toast.visible = false)
+	seq_tween.finished.connect(_on_error_toast_finished)
+
+func _on_error_toast_finished() -> void:
+	error_toast.visible = false

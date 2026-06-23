@@ -1,3 +1,4 @@
+
 extends Node
 
 # PID du processus node lancé, -1 si pas démarré
@@ -6,6 +7,12 @@ var _node_path: String = ""
 var _npm_path: String = ""
 
 func _ready() -> void:
+	# === CORRECTIF WEB : Si le jeu tourne sur le Web, on stoppe tout ici ===
+	if OS.has_feature("web"):
+		print("[ServerManager] Mode Web détecté : Le serveur distant (Render) est utilisé. Pas de serveur local à lancer.")
+		return 
+	# ======================================================================
+
 	# Détecter node et npm (compatible nvm)
 	_detect_node_npm()
 	# NETTOYAGE : Tuer tout ancien serveur resté bloqué sur le port 3000
@@ -47,7 +54,7 @@ func _detect_node_npm() -> void:
 			var latest_version := ""
 			while version_dir != "":
 				if nvm_scan.current_is_dir() and version_dir.begins_with("v"):
-					latest_version = version_dir  # Prend la dernière (ordre alpha)
+					latest_version = version_dir # Prend la dernière (ordre alpha)
 				version_dir = nvm_scan.get_next()
 			if latest_version != "":
 				var candidate := nvm_versions.path_join(latest_version).path_join("bin/node")
@@ -65,12 +72,12 @@ func _detect_node_npm() -> void:
 	
 	if _node_path.is_empty():
 		push_error("[ServerManager] ERREUR : node introuvable ! Installez Node.js ou vérifiez votre PATH.")
-		_node_path = "node"  # Fallback, tentera quand même
+		_node_path = "node" # Fallback, tentera quand même
 	
 	# Déduire npm du même dossier que node
 	_npm_path = _node_path.get_base_dir().path_join("npm")
 	if not FileAccess.file_exists(_npm_path):
-		_npm_path = "npm"  # Fallback
+		_npm_path = "npm" # Fallback
 	print("[ServerManager] npm déduit : %s" % _npm_path)
 
 func _cleanup_port_3000() -> void:
@@ -147,5 +154,9 @@ func stop_server() -> void:
 		_server_pid = -1
 
 func _notification(what: int) -> void:
+	# Sécurité si on est sur le Web
+	if OS.has_feature("web"):
+		return
+		
 	if what == NOTIFICATION_WM_CLOSE_REQUEST or what == NOTIFICATION_PREDELETE:
 		stop_server()

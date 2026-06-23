@@ -11,7 +11,7 @@ signal vote_update_received(stats: Array)
 signal server_debug_received(message: String)
 
 # L'URL qui imite la toute première connexion d'un client HTTP Socket.IO via WebSocket
-@export var server_url: String = "ws://127.0.0.1:3000/socket.io/?EIO=4&transport=websocket"
+@export var server_url: String = "wss://maxiflop-server-9vop.onrender.com/socket.io/?EIO=4&transport=websocket"
 
 var _socket := WebSocketPeer.new()
 var _is_connected := false
@@ -25,19 +25,29 @@ const INITIAL_DELAY: float = 3.0    # délai initial avant la première tentativ
 var _initial_delay_done := false
 var _initial_timer: float = 0.0
 
+# Crée une variable globale pour stocker le code généré
+var current_room_code: String = ""
+
 func connect_as_host() -> void:
 	if _is_connected:
-		print("[MultiplayerBridge] Déjà connecté, saut du délai et de la connexion.")
 		emit_signal("connected_to_server")
-		if last_public_url != "":
-			emit_signal("public_url_received", last_public_url)
 		return
-
-	print("[MultiplayerBridge] Connexion demandée, attente initiale de %.1fs..." % INITIAL_DELAY)
+	
+	# Générer un code unique à 4 caractères alphanumériques
+	current_room_code = _generate_random_room_code()
+	print("[MultiplayerBridge] Code de session généré pour cette borne : ", current_room_code)
+	
 	_want_connection = true
 	_initial_delay_done = false
 	_initial_timer = 0.0
-	_retry_timer = 0.0
+
+func _generate_random_room_code() -> String:
+	var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	var code = ""
+	for i in range(4):
+		var index = randi() % chars.length()
+		code += chars[index]
+	return code
 
 func disconnect_socket() -> void:
 	_want_connection = false
@@ -105,15 +115,17 @@ func _attempt_connect() -> void:
 		print("[MultiplayerBridge] Tentative de connexion à %s ..." % server_url)
 
 func send_game_phase(phase: String, remaining: int = 0, extra_data: Dictionary = {}) -> void:
-	var payload = {"phase": phase, "remaining": remaining}
+	# On injecte systématiquement le roomCode pour que le serveur sache d'où vient l'ordre
+	var payload = {"phase": phase, "remaining": remaining, "roomCode": current_room_code}
 	payload.merge(extra_data)
 	_emit_socketio("host_phase", payload)
 
 func send_elimination(player_id: String) -> void:
-	_emit_socketio("player_eliminated", {"playerId": player_id})
+	_emit_socketio("player_eliminated", {"playerId": player_id, "roomCode": current_room_code})
 
 func send_feedback(player_id: String, result: String, points: int, combo: int, score: int, rank: int) -> void:
 	_emit_socketio("feedback", {
+		"roomCode": current_room_code,
 		"playerId": player_id,
 		"result": result,
 		"points": points,
@@ -124,20 +136,21 @@ func send_feedback(player_id: String, result: String, points: int, combo: int, s
 
 func send_scoreboard(players: Array, team_scores: Dictionary) -> void:
 	_emit_socketio("scoreboard", {
+		"roomCode": current_room_code,
 		"players": players,
 		"teamScores": team_scores
 	})
 
 func send_music_list(musics: Array) -> void:
-	_emit_socketio("music_list", {"musics": musics})
+	_emit_socketio("music_list", {"roomCode": current_room_code, "musics": musics})
 
 func send_vote(song_name: String) -> void:
-	_emit_socketio("vote", {"songName": song_name})
+	_emit_socketio("vote", {"roomCode": current_room_code, "songName": song_name})
 
 func request_lobby() -> void:
-	_emit_socketio("get_lobby", {})
+	_emit_socketio("get_lobby", {"roomCode": current_room_code})
 
-# Traduction du JSON en trame Socket.IO (code '42') !
+# Traduction du JSON en trame Socket.IO (code '42')
 func _emit_socketio(event_name: String, payload: Dictionary = {}) -> void:
 	if _socket.get_ready_state() != WebSocketPeer.STATE_OPEN:
 		return
@@ -145,26 +158,25 @@ func _emit_socketio(event_name: String, payload: Dictionary = {}) -> void:
 	_socket.send_text(msg)
 
 func _handle_message(text: String) -> void:
-	# === LOGIQUE INTERNE ENGINE.IO & SOCKET.IO DÉCODÉE EN GDSCRIPT ===
-	
 	if text.begins_with("0"):
 		# Message 0: Engine.IO Open -> On demande tout de suite la connexion Socket.IO (Message 40)
 		_socket.send_text("40")
 	
 	elif text.begins_with("2"):
-		# Message 2: Engine.IO Ping -> On répond avec un Pong (Message 3) pour ne pas être kické !
+		# Message 2: Engine.IO Ping -> On répond avec un Pong (Message 3)
 		_socket.send_text("3")
 		
 	elif text.begins_with("40"):
-		# Message 40: Socket.IO nous accepte officiellement ! On envoie 'host_join'
+		# Message 40: Socket.IO nous accepte officiellement !
 		if not _is_connected:
 			_is_connected = true
-			print("[MultiplayerBridge] ✓ Connecté au serveur Node.js !")
-			_emit_socketio("host_join", {})
+			print("[MultiplayerBridge] ✓ Connecté. Enregistrement du salon : ", current_room_code)
+			# UNIQUE ENVOI SÉCURISÉ DU CODE SALON
+			_emit_socketio("host_join", {"roomCode": current_room_code})
 			emit_signal("connected_to_server")
 			
 	elif text.begins_with("42"):
-		# Message 42: C'est un événement Socket.IO. On traite le JSON "magique" de la forme ["mon_event", {data}]
+		# Message 42: Événement Socket.IO ["nom_event", {data}]
 		var json_str = text.substr(2)
 		var parsed = JSON.parse_string(json_str)
 		if typeof(parsed) == TYPE_ARRAY and parsed.size() >= 2:

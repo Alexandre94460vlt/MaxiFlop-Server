@@ -1,13 +1,13 @@
-[gd_scene load_steps=42 format=3 uid="uid://cfyaf4ikyente"]
+[gd_scene format=3 uid="uid://cfyaf4ikyente"]
 
-[ext_resource type="Script" uid="uid://5rffvyxrumdk" path="res://scripts/GameScreen.gd" id="1"]
-[ext_resource type="Script" uid="uid://bosdajfqbseo2" path="res://scripts/NoteSpawner.gd" id="2"]
-[ext_resource type="Script" uid="uid://uv7li1wb5jc7" path="res://scripts/HitZone.gd" id="3"]
+[ext_resource type="Script" uid="uid://dxkufwtmjtvi3" path="res://scripts/GameScreen.gd" id="1"]
+[ext_resource type="Script" uid="uid://bm3o8sgvmjn18" path="res://scripts/NoteSpawner.gd" id="2"]
+[ext_resource type="Script" uid="uid://d1n5u6m67sc4w" path="res://scripts/HitZone.gd" id="3"]
 [ext_resource type="PackedScene" uid="uid://dcwqtomkrgupn" path="res://scenes/Note.tscn" id="4"]
 [ext_resource type="AudioStream" uid="uid://dcf34i1jfenko" path="res://assets/test_kick_6s.wav" id="5_xpdqc"]
 [ext_resource type="FontFile" uid="uid://b4ve68u3poffy" path="res://assets/Ecriture/PixelifySans-VariableFont_wght.ttf" id="6_xvbay"]
 [ext_resource type="Texture2D" uid="uid://dyvouf8b51x5b" path="res://assets/GameScreenBack/Space Background.png" id="7_4j5qn"]
-[ext_resource type="Script" uid="uid://ch3kvol4lrfkh" path="res://scenes/fond.gd" id="7_wswou"]
+[ext_resource type="Script" uid="uid://cp8fj82v806gw" path="res://scenes/fond.gd" id="7_wswou"]
 [ext_resource type="Texture2D" uid="uid://dpw1hqbxawj7n" path="res://assets/GameScreenBack/star2.png" id="8_sk67e"]
 [ext_resource type="Texture2D" uid="uid://gs7gtjt4kaqq" path="res://assets/mascotte/bobA.png" id="10_itox2"]
 [ext_resource type="Texture2D" uid="uid://dnunxmncnhyny" path="res://assets/mascotte/bobB.png" id="11_srnt6"]
@@ -76,20 +76,6 @@ shadow_color = Color(0, 0, 0, 0.3)
 shadow_size = 15
 shadow_offset = Vector2(0, 8)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_hover"]
-content_margin_left = 24.0
-content_margin_top = 12.0
-content_margin_right = 24.0
-content_margin_bottom = 12.0
-bg_color = Color(0.48, 0.92, 1, 0.9)
-corner_radius_top_left = 12
-corner_radius_top_right = 12
-corner_radius_bottom_right = 12
-corner_radius_bottom_left = 12
-shadow_color = Color(0, 0, 0, 0.4)
-shadow_size = 12
-shadow_offset = Vector2(0, 6)
-
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_normal"]
 content_margin_left = 24.0
 content_margin_top = 12.0
@@ -103,6 +89,20 @@ corner_radius_bottom_left = 12
 shadow_color = Color(0, 0, 0, 0.3)
 shadow_size = 8
 shadow_offset = Vector2(0, 4)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_button_hover"]
+content_margin_left = 24.0
+content_margin_top = 12.0
+content_margin_right = 24.0
+content_margin_bottom = 12.0
+bg_color = Color(0.48, 0.92, 1, 0.9)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_color = Color(0, 0, 0, 0.4)
+shadow_size = 12
+shadow_offset = Vector2(0, 6)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_error_toast"]
 content_margin_left = 20.0
@@ -261,47 +261,47 @@ animations = [{
 "speed": 5.0
 }]
 
-[node name="GameScreen" type="Node2D"]
+[node name="GameScreen" type="Node2D" unique_id=1856030669]
 script = ExtResource("1")
 song_duration = 60.0
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="ColorRect" parent="." unique_id=1958764260]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 color = Color(0.04, 0.05, 0.08, 1)
 
-[node name="Ground" type="ColorRect" parent="."]
+[node name="Ground" type="ColorRect" parent="." unique_id=394915343]
 offset_top = 580.0
 offset_right = 852.0
 offset_bottom = 720.0
 color = Color(0.06, 0.07, 0.12, 1)
 
-[node name="PlayField" type="Node2D" parent="."]
+[node name="PlayField" type="Node2D" parent="." unique_id=1446218407]
 
-[node name="LineBlue" type="ColorRect" parent="PlayField"]
+[node name="LineBlue" type="ColorRect" parent="PlayField" unique_id=1319822825]
 offset_left = 142.0
 offset_right = 282.0
 offset_bottom = 720.0
 color = Color(0.2, 0.5, 0.6, 0.1)
 
-[node name="LineYellow" type="ColorRect" parent="PlayField"]
+[node name="LineYellow" type="ColorRect" parent="PlayField" unique_id=1149442111]
 offset_left = 355.0
 offset_right = 495.0
 offset_bottom = 720.0
 color = Color(0.6, 0.5, 0.15, 0.1)
 
-[node name="LineRed" type="ColorRect" parent="PlayField"]
+[node name="LineRed" type="ColorRect" parent="PlayField" unique_id=13270473]
 offset_left = 568.0
 offset_right = 708.0
 offset_bottom = 720.0
 color = Color(0.6, 0.25, 0.3, 0.1)
 
-[node name="NoteSpawner" type="Node2D" parent="PlayField"]
+[node name="NoteSpawner" type="Node2D" parent="PlayField" unique_id=372137230]
 script = ExtResource("2")
 note_scene = ExtResource("4")
 
-[node name="HitCircleBlue" type="PanelContainer" parent="PlayField"]
+[node name="HitCircleBlue" type="PanelContainer" parent="PlayField" unique_id=1047884418]
 offset_left = 162.0
 offset_top = 510.0
 offset_right = 262.0
@@ -309,7 +309,7 @@ offset_bottom = 610.0
 pivot_offset = Vector2(50, 50)
 theme_override_styles/panel = SubResource("StyleBoxFlat_ring_blue")
 
-[node name="HitCircleYellow" type="PanelContainer" parent="PlayField"]
+[node name="HitCircleYellow" type="PanelContainer" parent="PlayField" unique_id=646829380]
 offset_left = 375.0
 offset_top = 510.0
 offset_right = 475.0
@@ -317,7 +317,7 @@ offset_bottom = 610.0
 pivot_offset = Vector2(50, 50)
 theme_override_styles/panel = SubResource("StyleBoxFlat_ring_yellow")
 
-[node name="HitCircleRed" type="PanelContainer" parent="PlayField"]
+[node name="HitCircleRed" type="PanelContainer" parent="PlayField" unique_id=851904165]
 offset_left = 588.0
 offset_top = 510.0
 offset_right = 688.0
@@ -325,52 +325,54 @@ offset_bottom = 610.0
 pivot_offset = Vector2(50, 50)
 theme_override_styles/panel = SubResource("StyleBoxFlat_ring_red")
 
-[node name="HitZone" type="Node2D" parent="PlayField"]
+[node name="HitZone" type="Node2D" parent="PlayField" unique_id=1341662494]
 script = ExtResource("3")
 note_spawner = NodePath("../NoteSpawner")
 
-[node name="MusicPlayer" type="AudioStreamPlayer" parent="."]
+[node name="MusicPlayer" type="AudioStreamPlayer" parent="." unique_id=1811300646]
 stream = ExtResource("5_xpdqc")
 
-[node name="HUD" type="CanvasLayer" parent="."]
+[node name="HUD" type="CanvasLayer" parent="." unique_id=1677784418]
 
-[node name="ProgressBar" type="ProgressBar" parent="HUD"]
+[node name="ProgressBar" type="ProgressBar" parent="HUD" unique_id=1001683559]
 offset_right = 1280.0
 offset_bottom = 10.0
 theme_override_styles/fill = SubResource("StyleBoxFlat_progress_song")
 show_percentage = false
 
-[node name="LobbyFrame" type="PanelContainer" parent="HUD"]
-visible = false
+[node name="LobbyFrame" type="PanelContainer" parent="HUD" unique_id=1079571381]
 offset_left = 140.0
 offset_top = 110.0
 offset_right = 700.0
 offset_bottom = 610.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_rightpanel")
 
-[node name="VBox" type="VBoxContainer" parent="HUD/LobbyFrame"]
+[node name="VBox" type="VBoxContainer" parent="HUD/LobbyFrame" unique_id=544260562]
 layout_mode = 2
 theme_override_constants/separation = 20
 alignment = 1
 
-[node name="LobbyQRTexture" type="TextureRect" parent="HUD/LobbyFrame/VBox"]
+[node name="LobbyQRTexture" type="TextureRect" parent="HUD/LobbyFrame/VBox" unique_id=2040397301]
 custom_minimum_size = Vector2(300, 300)
 layout_mode = 2
 size_flags_horizontal = 4
 stretch_mode = 5
 
-[node name="StartMatchButton" type="Button" parent="HUD/LobbyFrame/VBox"]
+[node name="RoomCodeLabel" type="Label" parent="HUD/LobbyFrame/VBox" unique_id=506659708]
+layout_mode = 2
+
+[node name="StartMatchButton" type="Button" parent="HUD/LobbyFrame/VBox" unique_id=630044390]
 custom_minimum_size = Vector2(360, 70)
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_fonts/font = ExtResource("6_xvbay")
 theme_override_font_sizes/font_size = 28
-theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
 theme_override_styles/normal = SubResource("StyleBoxFlat_button_normal")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
 text = "Lancer la partie"
 
-[node name="ComboLabel" type="Label" parent="HUD"]
+[node name="ComboLabel" type="Label" parent="HUD" unique_id=1420093626]
 visible = false
 offset_left = 40.0
 offset_top = 395.0
@@ -381,7 +383,7 @@ theme_override_fonts/font = ExtResource("6_xvbay")
 theme_override_font_sizes/font_size = 28
 text = "x0 COMBO"
 
-[node name="MultiplierLabel" type="Label" parent="HUD"]
+[node name="MultiplierLabel" type="Label" parent="HUD" unique_id=1710651551]
 visible = false
 offset_left = 40.0
 offset_top = 352.0
@@ -392,7 +394,7 @@ theme_override_fonts/font = ExtResource("6_xvbay")
 theme_override_font_sizes/font_size = 24
 text = "x1"
 
-[node name="CountdownLabel" type="Label" parent="HUD"]
+[node name="CountdownLabel" type="Label" parent="HUD" unique_id=363203436]
 offset_top = 150.0
 offset_right = 840.0
 offset_bottom = 450.0
@@ -403,7 +405,7 @@ text = "5"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="WarmupLabel" type="Label" parent="HUD"]
+[node name="WarmupLabel" type="Label" parent="HUD" unique_id=88858713]
 offset_top = 100.0
 offset_right = 840.0
 offset_bottom = 200.0
@@ -414,19 +416,19 @@ text = "Salle d'attente"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="LobbyBackButton" type="Button" parent="HUD"]
+[node name="LobbyBackButton" type="Button" parent="HUD" unique_id=918865535]
 offset_left = 20.0
 offset_top = 20.0
 offset_right = 160.0
 offset_bottom = 70.0
 theme_override_fonts/font = ExtResource("6_xvbay")
 theme_override_font_sizes/font_size = 20
-theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
 theme_override_styles/normal = SubResource("StyleBoxFlat_button_normal")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
 text = "Retour"
 
-[node name="ErrorToast" type="PanelContainer" parent="HUD"]
+[node name="ErrorToast" type="PanelContainer" parent="HUD" unique_id=349661546]
 visible = false
 offset_left = 20.0
 offset_top = 20.0
@@ -434,7 +436,7 @@ offset_right = 300.0
 offset_bottom = 80.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_error_toast")
 
-[node name="Label" type="Label" parent="HUD/ErrorToast"]
+[node name="Label" type="Label" parent="HUD/ErrorToast" unique_id=1119470118]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_fonts/font = ExtResource("6_xvbay")
@@ -443,26 +445,26 @@ text = "Pas assez de joueurs"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="RightPanel" type="PanelContainer" parent="HUD"]
+[node name="RightPanel" type="PanelContainer" parent="HUD" unique_id=714336598]
 offset_left = 852.0
 offset_top = 16.0
 offset_right = 1270.0
 offset_bottom = 704.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_rightpanel")
 
-[node name="VBox" type="VBoxContainer" parent="HUD/RightPanel"]
+[node name="VBox" type="VBoxContainer" parent="HUD/RightPanel" unique_id=1908329872]
 layout_mode = 2
 theme_override_constants/separation = 16
 
-[node name="QRHTTPRequest" type="HTTPRequest" parent="HUD/RightPanel/VBox"]
+[node name="QRHTTPRequest" type="HTTPRequest" parent="HUD/RightPanel/VBox" unique_id=358885246]
 
-[node name="LobbyCount" type="Label" parent="HUD/RightPanel/VBox"]
+[node name="LobbyCount" type="Label" parent="HUD/RightPanel/VBox" unique_id=1965850453]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.75, 0.75, 0.88, 1)
 theme_override_font_sizes/font_size = 15
 text = "Joueurs connectes: 0"
 
-[node name="JoinLink" type="Label" parent="HUD/RightPanel/VBox"]
+[node name="JoinLink" type="Label" parent="HUD/RightPanel/VBox" unique_id=323944461]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.65, 0.65, 0.8, 1)
 theme_override_font_sizes/font_size = 18
@@ -470,103 +472,103 @@ text = "Rejoindre: http://127.0.0.1:3000"
 horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="ArriveeHeader" type="PanelContainer" parent="HUD/RightPanel/VBox"]
+[node name="ArriveeHeader" type="PanelContainer" parent="HUD/RightPanel/VBox" unique_id=1490853038]
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_arrivee")
 
-[node name="ArriveeLabel" type="Label" parent="HUD/RightPanel/VBox/ArriveeHeader"]
+[node name="ArriveeLabel" type="Label" parent="HUD/RightPanel/VBox/ArriveeHeader" unique_id=1756957285]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 15
 horizontal_alignment = 1
 
-[node name="TeamAScore" type="Label" parent="HUD/RightPanel/VBox"]
+[node name="TeamAScore" type="Label" parent="HUD/RightPanel/VBox" unique_id=1187319699]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.373, 0.804, 0.894, 1)
 theme_override_font_sizes/font_size = 17
 text = "Equipe bleue: 0"
 
-[node name="TeamBScore" type="Label" parent="HUD/RightPanel/VBox"]
+[node name="TeamBScore" type="Label" parent="HUD/RightPanel/VBox" unique_id=1757901769]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.439, 0.506, 1)
 theme_override_font_sizes/font_size = 17
 text = "Equipe rouge: 0"
 
-[node name="TeamCScore" type="Label" parent="HUD/RightPanel/VBox"]
+[node name="TeamCScore" type="Label" parent="HUD/RightPanel/VBox" unique_id=847909362]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.941, 0.878, 0.251, 1)
 theme_override_font_sizes/font_size = 17
 text = "Equipe jaune: 0"
 
-[node name="RacePanel" type="VBoxContainer" parent="HUD/RightPanel/VBox"]
+[node name="RacePanel" type="VBoxContainer" parent="HUD/RightPanel/VBox" unique_id=437345826]
 custom_minimum_size = Vector2(0, 170)
 layout_mode = 2
 theme_override_constants/separation = 28
 alignment = 1
 
-[node name="TeamATrack" type="HBoxContainer" parent="HUD/RightPanel/VBox/RacePanel"]
+[node name="TeamATrack" type="HBoxContainer" parent="HUD/RightPanel/VBox/RacePanel" unique_id=800279439]
 layout_mode = 2
 theme_override_constants/separation = 4
 alignment = 2
 
-[node name="TeamALabel" type="Label" parent="HUD/RightPanel/VBox/RacePanel/TeamATrack"]
+[node name="TeamALabel" type="Label" parent="HUD/RightPanel/VBox/RacePanel/TeamATrack" unique_id=1224294324]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.373, 0.804, 0.894, 1)
 theme_override_font_sizes/font_size = 13
 text = "E1"
 horizontal_alignment = 1
 
-[node name="TeamAProgress" type="ProgressBar" parent="HUD/RightPanel/VBox/RacePanel/TeamATrack"]
+[node name="TeamAProgress" type="ProgressBar" parent="HUD/RightPanel/VBox/RacePanel/TeamATrack" unique_id=1280669736]
 custom_minimum_size = Vector2(350, 25)
 layout_mode = 2
 theme_override_styles/fill = SubResource("StyleBoxFlat_44tku")
 show_percentage = false
 
-[node name="TeamBTrack" type="HBoxContainer" parent="HUD/RightPanel/VBox/RacePanel"]
+[node name="TeamBTrack" type="HBoxContainer" parent="HUD/RightPanel/VBox/RacePanel" unique_id=654355396]
 layout_mode = 2
 theme_override_constants/separation = 4
 alignment = 2
 
-[node name="TeamBLabel" type="Label" parent="HUD/RightPanel/VBox/RacePanel/TeamBTrack"]
+[node name="TeamBLabel" type="Label" parent="HUD/RightPanel/VBox/RacePanel/TeamBTrack" unique_id=1996060805]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.439, 0.506, 1)
 theme_override_font_sizes/font_size = 13
 text = "E2"
 horizontal_alignment = 1
 
-[node name="TeamBProgress" type="ProgressBar" parent="HUD/RightPanel/VBox/RacePanel/TeamBTrack"]
+[node name="TeamBProgress" type="ProgressBar" parent="HUD/RightPanel/VBox/RacePanel/TeamBTrack" unique_id=1659770532]
 custom_minimum_size = Vector2(350, 25)
 layout_mode = 2
 theme_override_styles/fill = SubResource("StyleBoxFlat_cs1ym")
 show_percentage = false
 
-[node name="TeamCTrack" type="HBoxContainer" parent="HUD/RightPanel/VBox/RacePanel"]
+[node name="TeamCTrack" type="HBoxContainer" parent="HUD/RightPanel/VBox/RacePanel" unique_id=688225235]
 layout_mode = 2
 theme_override_constants/separation = 4
 alignment = 2
 
-[node name="TeamCLabel" type="Label" parent="HUD/RightPanel/VBox/RacePanel/TeamCTrack"]
+[node name="TeamCLabel" type="Label" parent="HUD/RightPanel/VBox/RacePanel/TeamCTrack" unique_id=577709436]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.941, 0.878, 0.251, 1)
 theme_override_font_sizes/font_size = 13
 text = "E3"
 horizontal_alignment = 1
 
-[node name="TeamCProgress" type="ProgressBar" parent="HUD/RightPanel/VBox/RacePanel/TeamCTrack"]
+[node name="TeamCProgress" type="ProgressBar" parent="HUD/RightPanel/VBox/RacePanel/TeamCTrack" unique_id=539546462]
 custom_minimum_size = Vector2(350, 25)
 layout_mode = 2
 theme_override_styles/fill = SubResource("StyleBoxFlat_k8mal")
 show_percentage = false
 
-[node name="LeaderboardPanel" type="PanelContainer" parent="HUD/RightPanel/VBox"]
+[node name="LeaderboardPanel" type="PanelContainer" parent="HUD/RightPanel/VBox" unique_id=1392192133]
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_leaderboard")
 
-[node name="LeaderboardVBox" type="VBoxContainer" parent="HUD/RightPanel/VBox/LeaderboardPanel"]
+[node name="LeaderboardVBox" type="VBoxContainer" parent="HUD/RightPanel/VBox/LeaderboardPanel" unique_id=129857259]
 layout_mode = 2
 theme_override_constants/separation = 3
 
-[node name="Top5Label" type="RichTextLabel" parent="HUD/RightPanel/VBox/LeaderboardPanel/LeaderboardVBox"]
+[node name="Top5Label" type="RichTextLabel" parent="HUD/RightPanel/VBox/LeaderboardPanel/LeaderboardVBox" unique_id=1849400362]
 layout_mode = 2
 theme_override_font_sizes/normal_font_size = 14
 bbcode_enabled = true
@@ -574,18 +576,18 @@ text = "[b]LEADERBOARD GLOBAL TOP 5[/b]"
 fit_content = true
 autowrap_mode = 2
 
-[node name="ResultPanel" type="PanelContainer" parent="HUD"]
+[node name="ResultPanel" type="PanelContainer" parent="HUD" unique_id=855128115]
 visible = false
 offset_right = 852.0
 offset_bottom = 720.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_result")
 
-[node name="VBox" type="VBoxContainer" parent="HUD/ResultPanel"]
+[node name="VBox" type="VBoxContainer" parent="HUD/ResultPanel" unique_id=1849209227]
 layout_mode = 2
 theme_override_constants/separation = 26
 alignment = 1
 
-[node name="TitleLabel" type="Label" parent="HUD/ResultPanel/VBox"]
+[node name="TitleLabel" type="Label" parent="HUD/ResultPanel/VBox" unique_id=1489853672]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.518, 1, 0.788, 1)
 theme_override_fonts/font = ExtResource("6_xvbay")
@@ -593,7 +595,7 @@ theme_override_font_sizes/font_size = 44
 text = "FIN DE PARTIE"
 horizontal_alignment = 1
 
-[node name="TeamScoresLabel" type="RichTextLabel" parent="HUD/ResultPanel/VBox"]
+[node name="TeamScoresLabel" type="RichTextLabel" parent="HUD/ResultPanel/VBox" unique_id=2056230992]
 layout_mode = 2
 theme_override_font_sizes/normal_font_size = 26
 bbcode_enabled = true
@@ -601,14 +603,14 @@ text = "[center]Equipe bleue: 0  |  Equipe rouge: 0  |  Equipe jaune: 0[/center]
 fit_content = true
 autowrap_mode = 2
 
-[node name="WinnerLabel" type="Label" parent="HUD/ResultPanel/VBox"]
+[node name="WinnerLabel" type="Label" parent="HUD/ResultPanel/VBox" unique_id=941919975]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("6_xvbay")
 theme_override_font_sizes/font_size = 30
 text = "Equipe bleue remporte la partie !"
 horizontal_alignment = 1
 
-[node name="ResultTop5Label" type="RichTextLabel" parent="HUD/ResultPanel/VBox"]
+[node name="ResultTop5Label" type="RichTextLabel" parent="HUD/ResultPanel/VBox" unique_id=888616181]
 layout_mode = 2
 theme_override_font_sizes/normal_font_size = 18
 bbcode_enabled = true
@@ -616,53 +618,53 @@ text = "[center][b]LEADERBOARD[/b][/center]"
 fit_content = true
 autowrap_mode = 2
 
-[node name="ButtonsHBox" type="HBoxContainer" parent="HUD/ResultPanel/VBox"]
+[node name="ButtonsHBox" type="HBoxContainer" parent="HUD/ResultPanel/VBox" unique_id=1957243518]
 layout_mode = 2
 theme_override_constants/separation = 32
 alignment = 1
 
-[node name="RestartButton" type="Button" parent="HUD/ResultPanel/VBox/ButtonsHBox"]
+[node name="RestartButton" type="Button" parent="HUD/ResultPanel/VBox/ButtonsHBox" unique_id=325578498]
 custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
 theme_override_fonts/font = ExtResource("6_xvbay")
 theme_override_font_sizes/font_size = 24
-theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
 theme_override_styles/normal = SubResource("StyleBoxFlat_button_normal")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
 text = "↺  Rejouer"
 
-[node name="MenuButton" type="Button" parent="HUD/ResultPanel/VBox/ButtonsHBox"]
+[node name="MenuButton" type="Button" parent="HUD/ResultPanel/VBox/ButtonsHBox" unique_id=190688307]
 custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
 theme_override_fonts/font = ExtResource("6_xvbay")
 theme_override_font_sizes/font_size = 24
-theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
 theme_override_styles/normal = SubResource("StyleBoxFlat_button_normal")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_button_hover")
+theme_override_styles/hover = SubResource("StyleBoxFlat_button_hover")
 text = "≡  Retour Menu"
 
-[node name="Game_screen" type="ParallaxBackground" parent="."]
+[node name="Game_screen" type="ParallaxBackground" parent="." unique_id=1068412990]
 script = ExtResource("7_wswou")
 
-[node name="CoucheBack" type="ParallaxLayer" parent="Game_screen"]
+[node name="CoucheBack" type="ParallaxLayer" parent="Game_screen" unique_id=1633917473]
 motion_mirroring = Vector2(0, 721)
 
-[node name="SpriteBack" type="Sprite2D" parent="Game_screen/CoucheBack"]
+[node name="SpriteBack" type="Sprite2D" parent="Game_screen/CoucheBack" unique_id=2022288365]
 texture_filter = 1
 position = Vector2(754, 361)
 scale = Vector2(7.53, 3.605)
 texture = ExtResource("7_4j5qn")
 
-[node name="CoucheStars" type="ParallaxLayer" parent="Game_screen"]
+[node name="CoucheStars" type="ParallaxLayer" parent="Game_screen" unique_id=1557383419]
 motion_mirroring = Vector2(0, 721)
 
-[node name="SpriteStars" type="Sprite2D" parent="Game_screen/CoucheStars"]
+[node name="SpriteStars" type="Sprite2D" parent="Game_screen/CoucheStars" unique_id=1285066456]
 texture_filter = 1
 position = Vector2(754, 363)
 scale = Vector2(7.52, 3.63)
 texture = ExtResource("8_sk67e")
 
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1748478435]
 texture_filter = 1
 position = Vector2(38, 189)
 rotation = 1.5708
@@ -671,7 +673,7 @@ sprite_frames = SubResource("SpriteFrames_hla2o")
 autoplay = "default"
 frame_progress = 0.176512
 
-[node name="AnimatedSprite2D2" type="AnimatedSprite2D" parent="."]
+[node name="AnimatedSprite2D2" type="AnimatedSprite2D" parent="." unique_id=648760545]
 texture_filter = 1
 position = Vector2(814, 396)
 rotation = -1.5708
@@ -680,7 +682,7 @@ sprite_frames = SubResource("SpriteFrames_bpgbe")
 autoplay = "default"
 frame_progress = 0.570794
 
-[node name="AnimatedSprite2D3" type="AnimatedSprite2D" parent="."]
+[node name="AnimatedSprite2D3" type="AnimatedSprite2D" parent="." unique_id=170243109]
 texture_filter = 1
 position = Vector2(421.406, 685.438)
 scale = Vector2(3.66211, 4.42969)

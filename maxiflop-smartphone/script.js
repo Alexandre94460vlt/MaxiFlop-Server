@@ -1,4 +1,3 @@
-const roomInput = document.getElementById("roomInput");
 const nameInput = document.getElementById("nameInput");
 const statusText = document.getElementById("status");
 const teamInfo = document.getElementById("teamInfo");
@@ -21,60 +20,43 @@ const showScreen = (key) => {
 	screens[key].classList.remove("hidden");
 };
 
-// Connexion relative automatique (s'adapte à l'URL Render en cours)
 const socket = io();
 
 document.querySelectorAll(".join-team-btn").forEach((btn) => {
 	btn.addEventListener("click", () => {
 		const teamName = btn.dataset.team;
-		validateAndJoin(teamName);
+		joinGame(teamName);
 	});
 });
 
-function validateAndJoin(teamName) {
-	const roomCode = roomInput.value.trim().toUpperCase();
+function joinGame(teamName) {
 	const name = nameInput.value.trim();
-
-	if (!roomCode || roomCode.length !== 4) {
-		statusText.textContent = "Entrez un code salon valide à 4 caractères !";
-		return;
-	}
 	if (!name) {
 		statusText.textContent = "Entrez un pseudo d'abord !";
 		return;
 	}
 
-	statusText.textContent = "Vérification du salon...";
+	statusText.textContent = "Connexion...";
+	localStorage.setItem("maxiflop_name", name);
+	localStorage.setItem("maxiflop_team", teamName);
 
-	// On demande au serveur Node si la room Godot existe
-	socket.emit("verify-room", roomCode, (response) => {
-		if (response.valid) {
-			statusText.textContent = "Connexion...";
-			localStorage.setItem("maxiflop_name", name);
-			localStorage.setItem("maxiflop_team", teamName);
-			localStorage.setItem("maxiflop_room", roomCode);
+	socket.emit("join-game", name);
 
-			// Envoi groupé du pseudo ET du code de session requis par le nouveau serveur
-			socket.emit("join-game", { pseudo: name, roomCode: roomCode });
-
-			setTimeout(() => {
-				socket.emit("join-team", teamName);
-				showScreen("waiting");
-			}, 100);
-		} else {
-			statusText.textContent = response.error;
-		}
-	});
+	setTimeout(() => {
+		socket.emit("join-team", teamName);
+		showScreen("waiting");
+	}, 100);
 }
 
 socket.on("update-lobby", (gameState) => {
+	// Dynamically update team selection buttons correctly based on active teams logic
 	const teamCounts = {};
 	gameState.teams.forEach(t => teamCounts[t.name] = t.players.length || 0);
 
 	document.querySelectorAll(".join-team-btn").forEach((btn) => {
 		const targetTeam = btn.dataset.team;
 		const counts = { ...teamCounts };
-		counts[targetTeam] = (counts[targetTeam] || 0) + 1; // Simulation d'équilibrage
+		counts[targetTeam] = (counts[targetTeam] || 0) + 1; // Simulate joining
 		
 		const sizes = Object.values(counts);
 		const max = Math.max(...sizes);
@@ -87,6 +69,7 @@ socket.on("update-lobby", (gameState) => {
 	});
 
 	// Gestion du mode Battle Royale
+	// Support du mode dans gameState ou gameState.gameMode (uniformisation)
 	const mode = gameState.gameMode || gameState.currentMode || "NORMAL";
 	const isBR = (mode === "BATTLE_ROYALE");
 	document.querySelector(".team-btns").classList.toggle("hidden", isBR);
@@ -126,16 +109,16 @@ socket.on("host_phase", (data) => {
 		document.body.classList.remove("playing");
 		showScreen("waiting");
 		timerDisplay.textContent = "En attente du lancement par l'écran principal...";
+		// Remise à zéro visuelle pour la prochaine partie
 		scoreText.textContent = "0";
-		feedbackText.textContent = "Prêt ?";
+		feedbackText.textContent = "Pret ?";
 	} else if (data.phase === "voting") {
 		showScreen("vote");
 	}
 });
 
 socket.on("error-lancement", (msg) => {
-	alert("Erreur : " + msg);
-	showScreen("login");
+	alert("Erreur de lancement : " + msg);
 });
 
 socket.on("desequilibre", (teams) => {
@@ -188,13 +171,14 @@ socket.on("music_list", (musics) => {
 });
 
 socket.on("vote_result", (data) => {
-	console.log("Le gagnant est :", data.winner);
+	// Optionnel : on pourrait afficher le gagnant sur le téléphone aussi
+	console.log("Winner is:", data.winner);
 });
 
 socket.on("eliminated", (data) => {
 	if (data.status) {
 		showScreen("eliminated");
-		if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 300]);
+		if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 300]); // Vibration de défaite
 	}
 });
 
@@ -202,6 +186,7 @@ socket.on("eliminated", (data) => {
 const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 if (!isTouchDevice) {
 	document.body.classList.add("is-pc");
+	// Ajouter visuellement les lettres X, C, V dans les boutons
 	const btnBlue = document.querySelector('.btn.blue');
 	const btnYellow = document.querySelector('.btn.yellow');
 	const btnRed = document.querySelector('.btn.red');
@@ -212,9 +197,10 @@ if (!isTouchDevice) {
 
 document.addEventListener("keydown", (e) => {
 	if (screens.controller.classList.contains("hidden")) return;
-	if (e.repeat) return;
+	if (e.repeat) return; // Éviter le spam de touches qui fait perdre des points
 	
 	let color = -1;
+	// e.code est plus fiable que e.key pour les layouts différents (AZERTY/QWERTY)
 	if (e.code === "KeyX") color = 0; // Bleu
 	if (e.code === "KeyC") color = 1; // Jaune
 	if (e.code === "KeyV") color = 2; // Rouge
@@ -224,6 +210,7 @@ document.addEventListener("keydown", (e) => {
 			color,
 			clientTs: Date.now()
 		});
+		// Simuler le feedback visuel sur la manette
 		const btn = document.querySelector(`.btn[data-color="${color}"]`);
 		if (btn) {
 			btn.classList.add("active-hit");
@@ -258,7 +245,8 @@ function triggerVibration(result) {
 	if (!style) return;
 
 	if (navigator.vibrate) {
-		navigator.vibrate(style.vibrate);
+		const success = navigator.vibrate(style.vibrate);
+		console.log(`Vibration attempt (${result}): ${success}`);
 	}
 	if (flashTimeout) clearTimeout(flashTimeout);
 
@@ -271,16 +259,15 @@ function triggerVibration(result) {
 	}, result === "PERFECT" ? 180 : 80);
 }
 
-// Récupération et reconnexion automatique multisession
 const savedName = localStorage.getItem("maxiflop_name");
-const savedRoom = localStorage.getItem("maxiflop_room");
-if (savedName && savedRoom) {
+if (savedName) {
 	nameInput.value = savedName;
-	if (roomInput) roomInput.value = savedRoom;
 
+	// Reconnexion automatique si on a une équipe sauvegardée
 	const savedTeam = localStorage.getItem("maxiflop_team");
 	if (savedTeam) {
-		socket.emit("join-game", { pseudo: savedName, roomCode: savedRoom });
+		// Demande un reconnexion transparente au chargement de la page
+		socket.emit("join-game", savedName);
 		setTimeout(() => {
 			socket.emit("join-team", savedTeam);
 			showScreen("waiting");

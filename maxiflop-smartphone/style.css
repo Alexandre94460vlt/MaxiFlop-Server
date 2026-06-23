@@ -211,9 +211,9 @@ input:focus {
     cursor: pointer;
     transition: all 0.08s ease;
     box-shadow: 0 4px 0 0, 0 6px 10px rgba(0, 0, 0, 0.4);
-    min-height: 60px; /* Réduit un peu la hauteur pour laisser respirer l'input */
-    width: 100%; /* Laisse le grid parent s'occuper de la largeur */
-    /* aspect-ratio: 1; <-- SUPPRIMÉ pour éviter que le bouton devienne géant */
+    min-height: 80px;
+    width: 100%;
+    aspect-ratio: 1;
     color: white;
 }
 

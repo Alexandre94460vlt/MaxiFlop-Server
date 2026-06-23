@@ -9,24 +9,22 @@
 </head>
 <body>
     <div class="parallax-bg"></div>
-   <section id="login" class="screen">
-    <h1>MAXIFLOP</h1>
-    <p class="subtitle">Rejoignez une session de jeu</p>
-    
-    <input type="text" id="roomInput" placeholder="CODE SALON (ex: AB12)" maxlength="4" autocomplete="off" autocorrect="off" spellcheck="false" style="text-transform: uppercase; text-align: center; font-weight: bold;" />
-    
-    <input type="text" id="nameInput" placeholder="Pseudo" maxlength="15" />
-    
-    <div id="teamSelection">
-        <p>Choisis ton equipe :</p>
-        <div class="team-btns">
-            <button class="join-team-btn blue" data-team="Equipe1">Bleue</button>
-            <button class="join-team-btn red" data-team="Equipe2">Rouge</button>
-            <button class="join-team-btn yellow" data-team="Equipe3">Jaune</button>
+    <section id="login" class="screen">
+        <h1>MAXIFLOP</h1>
+        <p class="subtitle">Entrez votre pseudo pour rejoindre la partie</p>
+        <input type="text" id="nameInput" placeholder="Pseudo" maxlength="15" />
+        
+        <div id="teamSelection">
+            <p>Choisis ton equipe :</p>
+            <div class="team-btns">
+                <button class="join-team-btn blue" data-team="Equipe1">Bleue</button>
+                <button class="join-team-btn red" data-team="Equipe2">Rouge</button>
+                <button class="join-team-btn yellow" data-team="Equipe3">Jaune</button>
+            </div>
         </div>
-    </div>
-    <p id="status" class="status"></p>
-</section>
+        <p id="status" class="status"></p>
+    </section>
+
     <section id="waiting" class="screen hidden">
         <h2>En attente...</h2>
         <p id="teamInfo">Affectation d'equipe en cours</p>

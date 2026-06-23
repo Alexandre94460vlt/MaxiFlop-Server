@@ -1,0 +1,4 @@
+res://scenes/GameScreen.tscn
+res://scripts/GameScreen.gd
+res://scripts/MultiplayerBridge.gd
+res://scripts/ServerManager.gd

@@ -5,277 +5,362 @@ const { Server } = require('socket.io');
 const os = require('os');
 const app = express();
 const server = createServer(app);
-const io = new Server(server, { 
-    cors: { origin: "*", methods: ["GET", "POST"] },
-    transports: ['websocket', 'polling']
-});
-const port = process.env.PORT || 3000;
+const io = new Server(server, { cors: { origin: "*" } });
+const port = 3000;
+const { spawn } = require('child_process');
 
 app.use(express.static(join(__dirname, '../maxiflop-smartphone')));
 app.get('/', (req, res) => res.sendFile(join(__dirname, '../maxiflop-smartphone/index.html')));
 
-// Structure globale pour stocker plusieurs sessions en parallèle
-const sessions = {}; 
+const gameState = {
+	status: "lobby",
+	teams: [
+		{ name: "Equipe1", players: [] },
+		{ name: "Equipe2", players: [] },
+		{ name: "Equipe3", players: [] }
+	],
+	players: {},
+	teamScores: { "Equipe1": 0, "Equipe2": 0, "Equipe3": 0 },
+	availableMusics: [],
+	playerVotes: {},
+	gameMode: "NORMAL"
+};
 
-const publicUrl = process.env.RENDER_EXTERNAL_URL || process.env.PUBLIC_URL || `http://localhost:${port}`;
-console.log(`\n=== URL PUBLIQUE ===\n${publicUrl}\n===================\n`);
+let godotHost = null;
+let publicUrl = null;
+let cloudflaredProcess = null;
 
-// Helper pour créer un état de jeu vierge pour une room
-function createInitialGameState(roomCode) {
-    return {
-        roomCode: roomCode,
-        status: "lobby",
-        teams: [
-            { name: "Equipe1", players: [] },
-            { name: "Equipe2", players: [] },
-            { name: "Equipe3", players: [] }
-        ],
-        players: {},
-        teamScores: { "Equipe1": 0, "Equipe2": 0, "Equipe3": 0 },
-        availableMusics: [],
-        playerVotes: {},
-        gameMode: "NORMAL"
-    };
+function cleanupAndExit() {
+	console.log("\nArrêt du serveur et nettoyage...");
+	if (cloudflaredProcess) {
+		console.log("Fermeture du tunnel Cloudflare...");
+		cloudflaredProcess.kill();
+	}
+	process.exit(0);
 }
 
-function sendLobbyToGodot(roomCode) {
-    const session = sessions[roomCode];
-    if (!session || !session.godotHost) return;
+// Envoyer le lobby (infos joueurs) à godot
+function sendLobbyToGodot() {
+	if (!godotHost) return;
 
-    const playersArr = Object.keys(session.gameState.players).map(id => ({
-        id: id,
-        pseudo: session.gameState.players[id].pseudo,
-        team: session.gameState.players[id].team
-    }));
+	const playersArr = [];
+	Object.keys(gameState.players).forEach(id => {
+		playersArr.push({
+			id: id,
+			pseudo: gameState.players[id].pseudo,
+			team: gameState.players[id].team
+		});
+	});
 
-    session.godotHost.emit("lobby_update", {
-        players: playersArr,
-        teamScores: { ...session.gameState.teamScores },
-        publicUrl: publicUrl
-    });
+	const teamScores = { ...gameState.teamScores };
+
+	//on envoie - ici
+	godotHost.emit("lobby_update", {
+		players: playersArr,
+		teamScores: teamScores,
+		publicUrl: publicUrl
+	});
 }
 
-function envoyerVotesAGodot(roomCode) {
-    const session = sessions[roomCode];
-    if (!session || session.gameState.status !== "voting") return;
+function envoyerVotesAGodot() {
+	//Il faut voter
+	if (gameState.status !== "voting") return;
 
-    const choix = {};
-    const totalVotes = Object.keys(session.gameState.playerVotes).length;
+	const choix = {};
+	const totalVotes = Object.keys(gameState.playerVotes).length;
 
-    if (totalVotes === 0) {
-        io.to(roomCode).emit("vote_update", []);
-        return;
-    }
+	if (totalVotes === 0) {
+		io.emit("vote_update", []);
+		return;
+	}
 
-    Object.values(session.gameState.playerVotes).forEach(song => {
-        choix[song] = (choix[song] || 0) + 1;
-    });
+	Object.values(gameState.playerVotes).forEach(song => {
+		choix[song] = (choix[song] || 0) + 1;
+	});
 
-    const statsTrie = Object.keys(choix)
-        .map(songName => ({
-            songName,
-            votes: choix[songName],
-            percentage: Math.round((choix[songName] / totalVotes) * 100)
+	const statsTrie = Object.keys(choix)
+		.map(songName => ({
+			songName,
+			votes: choix[songName],
+			percentage: Math.round((choix[songName] / totalVotes) * 100)
 		}))
 		.sort((a, b) => b.votes - a.votes)
-		.slice(0, 3);
+		.slice(0, 3); // Top 3
 
-    io.to(roomCode).emit("vote_update", statsTrie);
+	io.emit("vote_update", statsTrie);
+}
+
+function envoyerJoueurRestantGodot(id) {
+	if (godotHost) godotHost.emit("player_left", { playerId: id });
+}
+
+function envoyerLobbyAClients() {
+	io.emit('update-lobby', gameState);
+}
+
+function verifierEquilibrage() {
+	const size = gameState.teams.map(t => t.players.length);
+	const nbActives = size.filter(s => s > 0).length;
+
+	if (nbActives < 1) {
+		io.emit('error-lancement', 'Il faut au moins 1 joueur pour jouer !');
+		return false;
+	}
+
+	const max = Math.max(...size);
+	const min = Math.min(...size);
+
+	//si la différence entre le nombre de joueur de l'équipe la plus nombreuse et l'équipe la moins nombreuse est sup à 2, on lance une erreur
+	if (max - min > 2) {
+		io.emit('desequilibre', gameState.teams);
+		return false;
+	}
+
+	return true;
 }
 
 io.on('connection', (socket) => {
-    console.log('User connecté globalement :', socket.id);
-    
-    // Garder trace de la room du socket actuel pour simplifier les déconnexions
-    let currentRoomCode = null;
+	console.log('user connected :', socket.id);
+	socket.emit('update-lobby', gameState);
 
-    // ─── HÔTE GODOT REJOINT ──────────────────────────────────────────────────
-    socket.on('host_join', (data) => {
-        const roomCode = (data && data.roomCode) ? data.roomCode.toUpperCase() : "DEFAULT";
-        currentRoomCode = roomCode;
-        
-        socket.join(roomCode);
-        console.log(`Godot Host connecté à la Session : ${roomCode}`);
+	socket.on('host_join', () => {
+		console.log('Godot Host connecté via Socket.IO.');
+		godotHost = socket;
 
-        // Initialisation de la session si inexistante
-        sessions[roomCode] = {
-            godotHost: socket,
-            gameState: createInitialGameState(roomCode)
-        };
+		// si l'URL publique est déjà prête, on l'envoie tout de suite
+		if (publicUrl) {
+			console.log("[Cloudflare] Envoi de l'URL publique existante à l'hôte Godot...");
+			godotHost.emit('public_url', { url: publicUrl });
+		}
 
-        if (publicUrl) {
-            socket.emit('public_url', { url: publicUrl });
-        }
+		sendLobbyToGodot();
+	});
 
-        sendLobbyToGodot(roomCode);
-        io.to(roomCode).emit('update-lobby', sessions[roomCode].gameState);
-    });
+	// Écoute de Godot
+	socket.on('host_phase', (data) => {
+		// data: { phase: "lobby", "countdown", "playing", "ended", gameMode: "NORMAL" }
 
-    // ─── VÉRIFICATION DU CODE PAR LE SMARTPHONE ──────────────────────────────
-    socket.on('verify-room', (roomCode, callback) => {
-        const code = roomCode.toUpperCase().trim();
-        if (sessions[code]) {
-            callback({ valid: true });
-        } else {
-            callback({ valid: false, error: "Code de session inconnu !" });
-        }
-    });
+		// maj de l'état interne -> mettre en gamemode normal avant de broadcast
+		gameState.gameMode = data.gameMode || "NORMAL";
 
-    // ─── MANETTE REJOINT UNE SESSION ─────────────────────────────────────────
-    socket.on('join-game', (data) => {
-        const roomCode = data.roomCode ? data.roomCode.toUpperCase().trim() : "";
-        const pseudo = data.pseudo;
+		if (gameState.status === "voting" && data.phase !== "voting") {
+			// calculer le gagnant
+			const choix = {};
+			Object.values(gameState.playerVotes).forEach(song => {
+				choix[song] = (choix[song] || 0) + 1;
+			});
 
-        if (!sessions[roomCode]) {
-            socket.emit('error-lancement', 'Cette session n\'existe plus.');
-            return;
-        }
+			let winner = "";
+			let maxVotes = -1;
+			Object.keys(choix).forEach(song => {
+				if (choix[song] > maxVotes) {
+					maxVotes = choix[song];
+					winner = song;
+				}
+			});
+			// si pas de vote, prendre une musique au hasard
+			if (!winner && gameState.availableMusics.length > 0) {
+				winner = gameState.availableMusics[Math.floor(Math.random() * gameState.availableMusics.length)];
+			}
 
-        currentRoomCode = roomCode;
-        socket.join(roomCode);
+			//on envoie a godot
+			io.emit('vote_result', { winner });
 
-        const session = sessions[roomCode];
-        session.gameState.players[socket.id] = { pseudo, team: 'Equipe1', score: 0 };
-        
-        socket.emit('update-lobby', session.gameState);
-        io.to(roomCode).emit('update-lobby', session.gameState);
-        sendLobbyToGodot(roomCode);
-    });
+		} else if (data.phase === "voting") {
+			if (gameState.status !== "voting") {
+				gameState.status = "voting";
+				gameState.playerVotes = {};
+			}
+			envoyerVotesAGodot();
+		} else if (data.phase === "reveal" || data.phase === "countdown") {
+			gameState.status = data.phase;
+		} else if (data.phase === "lobby" || data.phase === "ended") {
+			//on réinitialise
+			gameState.status = "lobby";
+			gameState.playerVotes = {};
+		}
 
-    // ─── ROUTAGE DES INSTRUCTIONS (RESTE DES ÉVÉNEMENTS) ─────────────────────
-    socket.on('host_phase', (data) => {
-        if (!currentRoomCode || !sessions[currentRoomCode]) return;
-        const session = sessions[currentRoomCode];
-        const gameState = session.gameState;
-        
-        gameState.gameMode = data.gameMode || "NORMAL";
+		// on prévient les clients
+		io.emit('host_phase', data);
+	});
 
-        if (gameState.status === "voting" && data.phase !== "voting") {
-            const choix = {};
-            Object.values(gameState.playerVotes).forEach(song => { choix[song] = (choix[song] || 0) + 1; });
+	socket.on('player_eliminated', (data) => {
+		// data: { playerId: "socketId" }
+		if (data.playerId) {
+			console.log(`Joueur éliminé : ${data.playerId}`);
+			io.to(data.playerId).emit('eliminated', { status: true });
+		}
+	});
 
-            let winner = "";
-            let maxVotes = -1;
-            Object.keys(choix).forEach(song => {
-                if (choix[song] > maxVotes) { maxVotes = choix[song]; winner = song; }
-            });
-            if (!winner && gameState.availableMusics.length > 0) {
-                winner = gameState.availableMusics[Math.floor(Math.random() * gameState.availableMusics.length)];
-            }
-            io.to(currentRoomCode).emit('vote_result', { winner });
+	socket.on('join-game', (pseudo) => {
+		gameState.players[socket.id] = { pseudo, team: 'Equipe1', score: 0 };
+		envoyerLobbyAClients();
+		sendLobbyToGodot();
+	});
 
-        } else if (data.phase === "voting") {
-            if (gameState.status !== "voting") {
-                gameState.status = "voting";
-                gameState.playerVotes = {};
-            }
-            envoyerVotesAGodot(currentRoomCode);
-        } else if (data.phase === "reveal" || data.phase === "countdown") {
-            gameState.status = data.phase;
-        } else if (data.phase === "lobby" || data.phase === "ended") {
-            gameState.status = "lobby";
-            gameState.playerVotes = {};
-        }
+	// envoyer l'état actuel immédiatement à la connexion
+	envoyerLobbyAClients();
 
-        io.to(currentRoomCode).emit('host_phase', data);
-    });
+	socket.on('get_lobby', () => {
+		if (socket === godotHost) {
+			sendLobbyToGodot();
+		}
+	});
 
-    socket.on('join-team', (teamName) => {
-        if (!currentRoomCode || !sessions[currentRoomCode]) return;
-        const session = sessions[currentRoomCode];
-        const player = session.gameState.players[socket.id];
-        const team = session.gameState.teams.find(t => t.name === teamName);
-        if (!player || !team) return;
+	socket.on('join-team', (teamName) => {
+		const player = gameState.players[socket.id];
+		const team = gameState.teams.find(t => t.name === teamName);
+		if (!player || !team) return;
 
-        if (player.team) {
-            const ancienneTeam = session.gameState.teams.find(t => t.name === player.team);
-            if (ancienneTeam) ancienneTeam.players = ancienneTeam.players.filter(id => id !== socket.id);
-        }
+		if (player.team) {
+			const ancienneTeam = gameState.teams.find(t => t.name === player.team);
+			if (ancienneTeam) ancienneTeam.players = ancienneTeam.players.filter(id => id !== socket.id);
+		}
 
-        player.team = teamName;
-        team.players.push(socket.id);
-        io.to(currentRoomCode).emit('update-lobby', session.gameState);
-        sendLobbyToGodot(currentRoomCode);
-    });
+		player.team = teamName;
+		team.players.push(socket.id);
+		//au client
+		io.emit('update-lobby', gameState);
+		//godot
+		sendLobbyToGodot();
+	});
 
-    socket.on('player_input', (data) => {
-        if (!currentRoomCode || !sessions[currentRoomCode]) return;
-        const session = sessions[currentRoomCode];
-        if (session.godotHost) {
-            session.godotHost.emit('player_input', {
-                playerId: socket.id,
-                color: Number(data.color),
-                clientTs: Number(data.clientTs || Date.now()),
-                serverTs: Date.now()
-            });
-        }
-    });
+	socket.on('player_input', (data) => {
+		if (godotHost) {
+			godotHost.emit('player_input', {
+				playerId: socket.id,
+				color: Number(data.color),
+				clientTs: Number(data.clientTs || Date.now()),
+				serverTs: Date.now()
+			});
+		}
+	});
 
-    socket.on('feedback', (data) => {
-        if (data.playerId) io.to(data.playerId).emit('feedback', data);
-    });
+	socket.on('feedback', (data) => {
+		if (data.playerId) io.to(data.playerId).emit('feedback', data);
+	});
 
-    socket.on('scoreboard', (data) => {
-        if (!currentRoomCode || !sessions[currentRoomCode]) return;
-        const session = sessions[currentRoomCode];
-        if (data.players) {
-            data.players.forEach(p => {
-                if (session.gameState.players[p.id]) {
-                    session.gameState.players[p.id].score = p.score;
-                    session.gameState.players[p.id].combo = p.combo;
-                    session.gameState.players[p.id].perfect_streak = p.perfect_streak;
-                }
-            });
-        }
-        if (data.teamScores) {
-            Object.assign(session.gameState.teamScores, data.teamScores);
-        }
-    });
+	socket.on('scoreboard', (data) => {
+		if (data.players) {
+			data.players.forEach(p => {
+				if (gameState.players[p.id]) {
+					gameState.players[p.id].score = p.score;
+					gameState.players[p.id].combo = p.combo;
+					gameState.players[p.id].perfect_streak = p.perfect_streak;
+				}
+			});
+		}
+		if (data.teamScores) {
+			Object.assign(gameState.teamScores, data.teamScores);
+		}
+	});
 
-    socket.on('music_list', (data) => {
-        if (!currentRoomCode || !sessions[currentRoomCode]) return;
-        sessions[currentRoomCode].gameState.availableMusics = data.musics || [];
-        io.to(currentRoomCode).emit('music_list', data.musics);
-    });
+	socket.on('music_list', (data) => {
+		gameState.availableMusics = data.musics || [];
+		io.emit('music_list', gameState.availableMusics);
+	});
 
-    socket.on('vote', (data) => {
-        if (!currentRoomCode || !sessions[currentRoomCode]) return;
-        const session = sessions[currentRoomCode];
-        const match = session.gameState.availableMusics.find(m => m.trim().toLowerCase() === data.songName.trim().toLowerCase());
-        session.gameState.playerVotes[socket.id] = match || data.songName;
-        envoyerVotesAGodot(currentRoomCode);
-    });
+	socket.on('vote', (data) => {
+		const songName = data.songName;
 
-    socket.on('player_eliminated', (data) => {
-        if (data.playerId) io.to(data.playerId).emit('eliminated', { status: true });
-    });
+		const cleanVote = songName.trim();
+		const match = gameState.availableMusics.find(m => m.trim().toLowerCase() === cleanVote.toLowerCase());
 
-    socket.on('disconnect', () => {
-        if (!currentRoomCode || !sessions[currentRoomCode]) return;
-        const session = sessions[currentRoomCode];
+		if (match) {
+			gameState.playerVotes[socket.id] = match;
+			envoyerVotesAGodot();
+		} else {
+			gameState.playerVotes[socket.id] = songName;
+			envoyerVotesAGodot();
+		}
+	});
 
-        if (session.godotHost === socket) {
-            console.log(`Godot Host déconnecté de la session ${currentRoomCode}. Fermeture.`);
-            io.to(currentRoomCode).emit('error-lancement', 'L\'écran principal s\'est déconnecté.');
-            delete sessions[currentRoomCode];
-            return;
-        }
+	//deconnexion
+	socket.on('disconnect', () => {
+		console.log('user disconnected :', socket.id);
 
-        const player = session.gameState.players[socket.id];
-        if (!player) return;
+		if (godotHost === socket) {
+			console.log('Godot Host déconnecté.');
+			godotHost = null;
+			cleanupAndExit();
+			return;
+		}
 
-        if (player.team) {
-            const team = session.gameState.teams.find(t => t.name === player.team);
-            if (team) team.players = team.players.filter(id => id !== socket.id);
-        }
+		const player = gameState.players[socket.id];
+		if (!player) return;
 
-        delete session.gameState.players[socket.id];
-        io.to(currentRoomCode).emit('update-lobby', session.gameState);
-        session.godotHost.emit("player_left", { playerId: socket.id });
-        sendLobbyToGodot(currentRoomCode);
-    });
+		if (player.team) {
+			const team = gameState.teams.find(t => t.name === player.team);
+			if (team) team.players = team.players.filter(id => id !== socket.id);
+		}
+
+		delete gameState.players[socket.id];
+		io.emit('update-lobby', gameState);
+		envoyerJoueurRestantGodot(socket.id);
+		sendLobbyToGodot();
+	});
 });
 
-server.listen(port, "0.0.0.0", () => {
-    console.log(`\nServeur multisession actif sur le port : ${port}`);
+const cloudflared = require('cloudflared');
+
+server.listen(port, "0.0.0.0", async () => {
+	console.log(`\nLocal: http://localhost:${port}`);
+	console.log("Système :", os.platform(), os.arch());
+	console.log("Node Executable :", process.execPath);
+
+	const ifaces = os.networkInterfaces();
+	for (let dev in ifaces) {
+		ifaces[dev].forEach((d) => {
+			if (d.family === 'IPv4' && !d.internal) console.log(`Wifi:  http://${d.address}:${port}`);
+		});
+	}
+	console.log();
+
+	try {
+		console.log("Démarrage du tunnel Cloudflare...");
+
+		const bin = cloudflared.bin;
+		const tunnelArgs = ['tunnel', '--url', `http://127.0.0.1:${port}`];
+
+		console.log(`[Cloudflare] Commande : ${bin} ${tunnelArgs.join(' ')}`);
+
+		cloudflaredProcess = spawn(bin, tunnelArgs);
+
+		let outputBuffer = '';
+		const handleTunnelOutput = (data) => {
+			const str = data.toString();
+			outputBuffer += str;
+
+			// Filtrage des logs pour la console
+			if (str.includes("INF") || str.includes("ERR") || str.includes("https://")) {
+				process.stdout.write("[Cloudflare] " + str);
+			}
+
+			const match = outputBuffer.match(/https:\/\/[a-zA-Z0-9-]+\.trycloudflare\.com/);
+			if (match && !publicUrl) {
+				publicUrl = match[0];
+				console.log(`\n=== TUNNEL PRÊT ===\nURL publique: ${publicUrl}\n===================\n`);
+
+				if (godotHost) {
+					console.log("[Cloudflare] Envoi de l'URL à l'Hôte Godot.");
+					godotHost.emit('public_url', { url: publicUrl });
+				}
+			}
+		};
+
+		cloudflaredProcess.stdout.on('data', handleTunnelOutput);
+		cloudflaredProcess.stderr.on('data', handleTunnelOutput);
+
+		cloudflaredProcess.on('close', (code) => {
+			console.log(`Le tunnel Cloudflare s'est fermé avec le code ${code}`);
+			cloudflaredProcess = null;
+		});
+
+		cloudflaredProcess.on('error', (err) => {
+			console.log("Erreur critique Cloudflare :", err.message);
+		});
+
+	} catch (e) {
+		console.log("Erreur de lancement Cloudflare :", e.message);
+	}
 });

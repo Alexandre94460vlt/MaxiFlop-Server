@@ -105,10 +105,14 @@ func stop() -> void:
 func _process(delta: float) -> void:
 	if not is_running:
 		return
-	time_elapsed += delta
+	
+	# On s'assure que le temps du spawner avance au même rythme que l'écran de jeu
+	time_elapsed = get_parent().elapsed if "elapsed" in get_parent() else (time_elapsed + delta)
 	
 	if current_cooldown > 0:
 		current_cooldown -= delta
+		
+	
 		
 	if analyzer_instance != null:
 		var mag: Vector2 = analyzer_instance.get_magnitude_for_frequency_range(20.0, current_max_freq, AudioEffectSpectrumAnalyzerInstance.MAGNITUDE_AVERAGE)
